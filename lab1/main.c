@@ -1,8 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "test.h"
+#include "lab1.h"
 
-int main() {
-    CreateProcess();
-    printf("213\n");
+int main(void) {
+    return ParentRoutine("child", stdin);
 }
