@@ -87,8 +87,9 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
         ABORT_IF(close(pipes[1][WRITE_END]), "close");
         pipes[1][WRITE_END] = -1;
         for (int i = 0; i < 2; ++i) {
-            int waitPid = wait(NULL);
-            GOTO_IF(!(waitPid == pids[0] || waitPid == pids[1]), "wait", err);
+            int status;
+            int waitPid = wait(&status);
+            GOTO_IF(status || !(waitPid == pids[0] || waitPid == pids[1]), "wait", err);
         }
     }
     free(line);
