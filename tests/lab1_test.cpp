@@ -12,6 +12,9 @@ extern "C" {
 }
 
 TEST(FirstLabTests, SimpleTest) {
+    const char *childPath = getenv("PATH_TO_CHILD");
+    ASSERT_TRUE(childPath);
+
     const std::string fileWithInput = "input.txt";
     const std::string fileWithOutput1 = "output1.txt";
     const std::string fileWithOutput2 = "output2.txt";
@@ -60,8 +63,8 @@ TEST(FirstLabTests, SimpleTest) {
 
     std::unique_ptr<FILE, decltype(deleter)> inFile(fopen(fileWithInput.c_str(), "r"), deleter);
 
-    ASSERT_TRUE(ParentRoutine(getenv("PATH_TO_CHILD"), inFile.get()) == 0);
-    
+    ASSERT_TRUE(ParentRoutine(childPath, inFile.get()) == 0);
+
     auto outFile1 = std::ifstream(fileWithOutput1);
     auto outFile2 = std::ifstream(fileWithOutput2);
     ASSERT_TRUE(outFile1.good() && outFile2.good());
@@ -77,7 +80,6 @@ TEST(FirstLabTests, SimpleTest) {
         std::getline(outFile2, result);
         EXPECT_EQ(result, line);
     }
-
 
     auto removeIfExists = [](const std::string &path) {
         if (fs::exists(path)) {

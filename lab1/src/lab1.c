@@ -96,11 +96,15 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
 
 err:
     free(line);
-    ABORT_IF(close(fds[0]), "close");
-    ABORT_IF(close(fds[1]), "close");
-    ABORT_IF(close(pipes[0][READ_END]), "close");
-    ABORT_IF(close(pipes[0][WRITE_END]), "close");
-    ABORT_IF(close(pipes[1][READ_END]), "close");
-    ABORT_IF(close(pipes[1][WRITE_END]), "close");
+    errno = 0;
+    close(fds[0]);
+    close(fds[1]);
+    close(pipes[0][READ_END]);
+    close(pipes[0][WRITE_END]);
+    close(pipes[1][READ_END]);
+    close(pipes[1][WRITE_END]);
+    if (errno == EIO) {
+        abort();
+    }
     return -1;
 }

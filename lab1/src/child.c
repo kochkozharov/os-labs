@@ -12,7 +12,7 @@ int main(void) {
     size_t len;
     while ((nread = getline(&line, &len, stdin)) != -1) {
         ReverseString(line, nread-1);
-        printf("%s", line);
+        GOTO_IF(printf("%s", line) < 0, "printf", err);
     }
     GOTO_IF(errno == ENOMEM, "getline", err);
     free(line);

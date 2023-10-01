@@ -4,5 +4,10 @@
 #include "lab1.h"
 
 int main(void) {
-    return ParentRoutine("child", stdin);
+    const char *childPath = getenv("PATH_TO_CHILD");
+    if (!childPath) {
+        fprintf(stderr, "Set environment variable PATH_TO_CHILD\n");
+        exit(EXIT_FAILURE);
+    }
+    return ParentRoutine(childPath , stdin);
 }
