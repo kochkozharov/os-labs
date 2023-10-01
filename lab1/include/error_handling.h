@@ -35,7 +35,9 @@
     do { \
         if ((condition)) { \
             fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
-            perror(err_func); \
+            if (err_func) { \
+                perror(err_func); \
+            } \
             goto label; \
         } \
     } while (false)
