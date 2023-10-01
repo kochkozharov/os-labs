@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define FILTER_LEN (10U)
+#define FILTER_LEN (11U)
 #define MODE (0644U)
 
 int ParentRoutine(const char* pathToChild, FILE* stream);
