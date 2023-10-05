@@ -14,9 +14,9 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
     int pipes[2][2] = {{-1, -1}, {-1, -1}};
 
     char* line = NULL;
-    size_t len;
+    size_t len = 0;
     char* extraLine = NULL;
-    size_t extraLen;
+    size_t extraLen = 0;
     
     errno = 0;
     ssize_t nread = getline(&line, &len, stream);
@@ -104,7 +104,6 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
 
         GOTO_IF(waitpid(-1, NULL, WNOHANG), "waitpid", err);
         ssize_t nread;
-        size_t len;
         while ((nread = getline(&line, &len, stream)) != -1) {
             GOTO_IF(waitpid(-1, NULL, WNOHANG), "waitpid", err);
             if (nread <= FILTER_LEN) {
