@@ -10,16 +10,16 @@ static void Convolution(const Image* img, size_t idx, const Kernel* ker,
     uc(*imgMat)[img->width] = img->matrix;
     const int(*kerMat)[ker->order] = ker->matrix;
     uc(*outMat)[img->width] = out;
-    const size_t absI = idx * img->channels / img->width;
-    const size_t absJ = idx * img->channels % img->width;
+    const size_t absI = (idx / img->width) * img->channels;
+    const size_t absJ = (idx % img->width) * img->channels;
     size_t sum[MAX_CHANNELS] = {0};
     for (int i = -(ker->order / 2); i <= ker->order / 2; ++i) {
         for (int j = -ker->order / 2; j <= ker->order / 2; ++j) {
-            const int kerI = i + ker->order/2;
-            const int kerJ = j + ker->order/2;
+            const int kerI = i + ker->order / 2;
+            const int kerJ = j + ker->order / 2;
 
             size_t imgI;
-            if (i * img->channels < 0 && (size_t)-i * img->channels > absI) {
+            if (i < 0 && (size_t)-i * img->channels > absI) {
                 imgI = 0;
             } else {
                 imgI = (size_t)i * img->channels + absI;
@@ -49,15 +49,14 @@ static void Convolution(const Image* img, size_t idx, const Kernel* ker,
     }
 }
 
-void ApplyKernel(Image* img, const Kernel* kernel, int k,
-                 uc (*output)[]) {
+void ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
     assert(kernel->order % 2 == 1 && img->channels <= MAX_CHANNELS);
     size_t matrixSize = img->height * img->width;
     for (int iteration = 0; iteration < k; ++iteration) {
         for (size_t i = 0; i < matrixSize; ++i) {
             Convolution(img, i, kernel, output);
         }
-        uc (*temp)[] = img->matrix;
+        uc(*temp)[] = img->matrix;
         img->matrix = output;
         output = temp;
     }

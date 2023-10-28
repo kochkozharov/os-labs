@@ -28,10 +28,12 @@ static const Kernel BOX3 = {
     .divCoef = 9,
 };
 
-
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        fprintf(stderr, "blur: missing 2 file operands\n");
+    (void)GAUSSIAN5;
+    (void)BOX3;
+
+    if (argc != 4) {
+        fprintf(stderr, "Usage: FILENAME INPUT K (apply k times convolution)\n");
         exit(EXIT_FAILURE);
     }
 
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]) {
                          .width = width,
                          .height = height,
                          .channels = channels},
-                &GAUSSIAN5, 5, (stbi_uc (*)[])newImg);
+                &BOX3, atoi(argv[3]), (stbi_uc (*)[])newImg);
     stbi_write_jpg(argv[2], width, height, channels, newImg, 100);
 
     stbi_image_free(img);
