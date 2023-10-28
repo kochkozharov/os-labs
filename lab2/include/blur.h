@@ -2,6 +2,7 @@
 #define BLUR_H
 
 #include <stddef.h>
+#include <pthread.h>
 
 #define MAX_CHANNELS (4)
 
@@ -19,6 +20,16 @@ typedef struct {
     int order;
     int divCoef;
 } Kernel;
+
+typedef struct {
+    Image* img;
+    const Kernel* ker;
+    pthread_barrier_t *barrier;
+    uc (*out)[];
+    size_t begin;
+    size_t end;
+    int times;
+} ThreadArgs;
 
 void ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]);
 

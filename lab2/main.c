@@ -3,6 +3,7 @@
 #include <stb/stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
+#include <time.h>
 
 #include "blur.h"
 
@@ -33,7 +34,6 @@ static const Kernel BOX3 = {
 };
 
 int main(int argc, char *argv[]) {
-
     if (argc < 3 || strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
                 "Usage: blur INPUT_FNAME OUTPUT_FNAME -f FILTER -k K (apply "
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     int width;
     int height;
     int channels;
-    stbi_uc *img = stbi_load(argv[argc-2], &width, &height, &channels, 0);
+    stbi_uc *img = stbi_load(argv[argc - 2], &width, &height, &channels, 0);
 
     if (img == NULL) {
         perror("stbi_load");
@@ -79,12 +79,11 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    const Kernel *ker=&GAUSSIAN5;
+    const Kernel *ker = &GAUSSIAN5;
     if (filter == box) {
         ker = &BOX3;
         printf("Applying box blur\n");
-    }
-    else {
+    } else {
         printf("Applying gaussian blur\n");
     }
 
@@ -92,11 +91,14 @@ int main(int argc, char *argv[]) {
                          .width = width,
                          .height = height,
                          .channels = channels},
-            ker, (int)times, (stbi_uc(*)[])newImg);
-    if(stbi_write_jpg(argv[argc-1], width, height, channels, newImg, 100) == 1) {
-        printf("Successfully written %zu bytes\n", (size_t)width * height * channels);
-    }
+                ker, (int)times, (stbi_uc(*)[])newImg);
     
+    if (stbi_write_jpg(argv[argc - 1], width, height, channels, newImg,
+                         100) == 1) {
+        printf("Successfully written %zu bytes\n",
+               (size_t)width * height * channels);
+    }
+
     else {
         perror("stbi_write_jpg");
         exit(EXIT_FAILURE);
