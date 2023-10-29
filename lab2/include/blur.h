@@ -31,6 +31,6 @@ typedef struct {
     int times;
 } ThreadArgs;
 
-void ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]);
+uc *ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]);
 
 #endif  // BLUR_H

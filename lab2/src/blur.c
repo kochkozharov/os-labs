@@ -66,13 +66,13 @@ static void* ChunkConvolution(void* ptr) {
         int status = pthread_barrier_wait(args->barrier);
         if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) {
             perror("pthread_barrier_wait");
-            exit(EXIT_FAILURE);
+            exit(status);
         }
     }
     pthread_exit(0);
 }
 
-void ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
+uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
     assert(kernel->order % 2 == 1 && img->channels <= MAX_CHANNELS);
     int status;
     size_t matrixSize = img->height * img->width;
@@ -89,7 +89,7 @@ void ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
     for (int i = 0; i < THREAD_NUM; ++i) {
         size_t begin = i * pixelsPerThread;
         size_t end =
-            i == THREAD_NUM - 1 ? matrixSize - 1 : begin + pixelsPerThread;
+            i == THREAD_NUM - 1 ? matrixSize : begin + pixelsPerThread;
         args[i] = (ThreadArgs){.img = img,
                                .begin = begin,
                                .end = end,
@@ -97,16 +97,15 @@ void ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
                                .out = output,
                                .times = k,
                                .barrier = &barrier};
-        printf("%zu %zu\n", begin, end);
         status = pthread_create(&threads[i], NULL, ChunkConvolution, &args[i]);
         if (status != 0) {
             perror("pthread_create");
             exit(status);
         }
     }
-
     for (int i = 0; i < THREAD_NUM; ++i) {
         pthread_join(threads[i], NULL);
     }
     pthread_barrier_destroy(&barrier);
+    return (uc*)(k % 2 == 1 ? output : img->matrix);
 }

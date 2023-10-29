@@ -64,7 +64,6 @@ int main(int argc, char *argv[]) {
     int height;
     int channels;
     stbi_uc *img = stbi_load(argv[argc - 2], &width, &height, &channels, 0);
-
     if (img == NULL) {
         perror("stbi_load");
         exit(EXIT_FAILURE);
@@ -87,19 +86,18 @@ int main(int argc, char *argv[]) {
         printf("Applying gaussian blur\n");
     }
 
-    ApplyKernel(&(Image){.matrix = (stbi_uc(*)[])img,
-                         .width = width,
-                         .height = height,
-                         .channels = channels},
-                ker, (int)times, (stbi_uc(*)[])newImg);
-    
-    if (stbi_write_jpg(argv[argc - 1], width, height, channels, newImg,
-                         100) == 1) {
+    stbi_uc(*weakPtr)[] =
+        (uc(*)[])ApplyKernel(&(Image){.matrix = (stbi_uc(*)[])img,
+                                      .width = width,
+                                      .height = height,
+                                      .channels = channels},
+                             ker, (int)times, (stbi_uc(*)[])newImg);
+    int status =
+        stbi_write_jpg(argv[argc - 1], width, height, channels, weakPtr, 100);
+    if (status == 1) {
         printf("Successfully written %zu bytes\n",
                (size_t)width * height * channels);
-    }
-
-    else {
+    } else {
         perror("stbi_write_jpg");
         exit(EXIT_FAILURE);
     }
