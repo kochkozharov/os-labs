@@ -53,21 +53,20 @@ static void Convolution(const Image* img, size_t idx, const Kernel* ker,
     }
 }
 static void* ChunkConvolution(void* ptr) {
-    ThreadArgs* args = ptr;
-    Image img = *(args->img);
-    uc(*out)[] = args->out;
-    for (int iteration = 0; iteration < args->times; ++iteration) {
-        for (size_t i = args->begin; i < args->end; ++i) {
-            Convolution(&img, i, args->ker, out);
+    ThreadArgs* arg = ptr;
+    uc(*out)[] = arg->out;
+    for (int iteration = 0; iteration < arg->times; ++iteration) {
+        for (size_t i = arg->begin; i < arg->end; ++i) {
+            Convolution(arg->img, i, arg->ker, out);
         }
-        uc(*temp)[] = img.matrix;
-        img.matrix = out;
-        out = temp;
-        int status = pthread_barrier_wait(args->barrier);
+        int status = pthread_barrier_wait(arg->barrier);
         if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) {
             perror("pthread_barrier_wait");
             exit(status);
         }
+        uc(*temp)[] = arg->img->matrix;
+        arg->img->matrix = out;
+        out = temp;
     }
     pthread_exit(0);
 }
