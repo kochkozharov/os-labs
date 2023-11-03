@@ -77,21 +77,29 @@ int main(int argc, char *argv[]) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-
+    const char *filterName;
     const Kernel *ker = &GAUSSIAN5;
     if (filter == box) {
         ker = &BOX3;
-        printf("Applying box blur\n");
+        filterName = "box";
     } else {
-        printf("Applying gaussian blur\n");
+        filterName = "gaussian";
     }
-
+    printf("Applying %s blur %ld times on %d threads\n", filterName, times,
+           THREAD_NUM);
+    struct timespec start, finish;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     stbi_uc(*weakPtr)[] =
         (uc(*)[])ApplyKernel(&(Image){.matrix = (stbi_uc(*)[])img,
                                       .width = width,
                                       .height = height,
                                       .channels = channels},
                              ker, (int)times, (stbi_uc(*)[])newImg);
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    double elapsed;
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1.0E9;
+    printf("Function took %fs to execute\n", elapsed);
     int status =
         stbi_write_jpg(argv[argc - 1], width, height, channels, weakPtr, 100);
     if (status == 1) {
@@ -101,7 +109,6 @@ int main(int argc, char *argv[]) {
         perror("stbi_write_jpg");
         exit(EXIT_FAILURE);
     }
-
     stbi_image_free(img);
     free(newImg);
     return 0;

@@ -7,8 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define THREAD_NUM (12)
-
 static void Convolution(const Image* img, size_t idx, const Kernel* ker,
                         uc (*out)[]) {
     uc(*imgMat)[img->width] = img->matrix;
@@ -62,13 +60,13 @@ static void* ChunkConvolution(void* ptr) {
         int status = pthread_barrier_wait(arg->barrier);
         if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) {
             perror("pthread_barrier_wait");
-            exit(status);
+            pthread_exit(NULL);
         }
         uc(*temp)[] = arg->img->matrix;
         arg->img->matrix = out;
         out = temp;
     }
-    pthread_exit(0);
+    return NULL;
 }
 
 uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
@@ -87,8 +85,7 @@ uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
 
     for (int i = 0; i < THREAD_NUM; ++i) {
         size_t begin = i * pixelsPerThread;
-        size_t end =
-            i == THREAD_NUM - 1 ? matrixSize : begin + pixelsPerThread;
+        size_t end = i == THREAD_NUM - 1 ? matrixSize : begin + pixelsPerThread;
         args[i] = (ThreadArgs){.img = img,
                                .begin = begin,
                                .end = end,

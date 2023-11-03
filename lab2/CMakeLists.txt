@@ -4,5 +4,5 @@ add_executable(
                include/blur.h src/blur.c 
                )
 
-target_link_libraries(blur m)
+target_link_libraries(blur m dl)
 target_include_directories(blur PRIVATE include)
