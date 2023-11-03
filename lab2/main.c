@@ -7,7 +7,7 @@
 
 #include "blur.h"
 
-typedef enum { gauss, box } Filter;
+typedef enum { gauss, box } TFilter;
 
 static const Kernel GAUSSIAN5 = {
     .matrix =
@@ -42,8 +42,9 @@ int main(int argc, char *argv[]) {
     }
 
     long times = 1;
-    Filter filter = gauss;
-    for (int opt; opt = getopt(argc, argv, "f:k:"), opt != -1;) {
+    unsigned long threadsNum = DEF_THREAD_NUM;
+    TFilter filter = gauss;
+    for (int opt; opt = getopt(argc, argv, "f:k:t:"), opt != -1;) {
         switch (opt) {
             case '?':
                 perror("getopt");
@@ -53,10 +54,16 @@ int main(int argc, char *argv[]) {
                     filter = box;
                 }
                 break;
-            case 'k':;
+            case 'k': {
                 char *end;
                 times = strtol(optarg, &end, 10);
                 break;
+            }
+            case 't': {
+                char *end;
+                threadsNum = strtol(optarg, &end, 10);
+                break;
+            }
         }
     }
 
@@ -68,15 +75,15 @@ int main(int argc, char *argv[]) {
         perror("stbi_load");
         exit(EXIT_FAILURE);
     }
-
     printf("Loaded. x: %dpx y: %dpx channels: %d.\n", width, height, channels);
-    size_t imgSize = (size_t)width * height * channels;
 
+    size_t imgSize = (size_t)width * height * channels;
     stbi_uc *newImg = malloc(imgSize);
     if (!newImg) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
+
     const char *filterName;
     const Kernel *ker = &GAUSSIAN5;
     if (filter == box) {
@@ -85,21 +92,26 @@ int main(int argc, char *argv[]) {
     } else {
         filterName = "gaussian";
     }
-    printf("Applying %s blur %ld times on %d threads\n", filterName, times,
-           THREAD_NUM);
-    struct timespec start, finish;
+    printf("Applying %s blur %ld times on %ld threads\n", filterName, times,
+           threadsNum);
+
+    struct timespec start;
+    struct timespec finish;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    stbi_uc(*weakPtr)[] =
-        (uc(*)[])ApplyKernel(&(Image){.matrix = (stbi_uc(*)[])img,
-                                      .width = width,
-                                      .height = height,
-                                      .channels = channels},
-                             ker, (int)times, (stbi_uc(*)[])newImg);
+
+    stbi_uc *weakPtr =
+        ApplyKernel(&(Image){.matrix = (stbi_uc(*)[])img,
+                             .width = width,
+                             .height = height,
+                             .channels = channels},
+                    ker, (int)times, (stbi_uc(*)[])newImg, threadsNum);
+
     clock_gettime(CLOCK_MONOTONIC, &finish);
     double elapsed;
     elapsed = (finish.tv_sec - start.tv_sec);
     elapsed += (finish.tv_nsec - start.tv_nsec) / 1.0E9;
     printf("Function took %fs to execute\n", elapsed);
+
     int status =
         stbi_write_jpg(argv[argc - 1], width, height, channels, weakPtr, 100);
     if (status == 1) {
@@ -109,6 +121,7 @@ int main(int argc, char *argv[]) {
         perror("stbi_write_jpg");
         exit(EXIT_FAILURE);
     }
+
     stbi_image_free(img);
     free(newImg);
     return 0;

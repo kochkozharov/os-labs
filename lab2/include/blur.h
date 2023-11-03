@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #define MAX_CHANNELS (4)
-#define THREAD_NUM (12)
+#define DEF_THREAD_NUM (12)
 
 typedef unsigned char uc;
 
@@ -26,12 +26,12 @@ typedef struct {
     Image* img;
     const Kernel* ker;
     pthread_barrier_t* barrier;
-    uc (*out)[];
+    uc (*buf)[];
     size_t begin;
     size_t end;
     int times;
 } ThreadArgs;
 
-uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]);
+uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*buffer)[], unsigned long threadsNum);
 
 #endif  // BLUR_H

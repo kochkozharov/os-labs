@@ -52,45 +52,46 @@ static void Convolution(const Image* img, size_t idx, const Kernel* ker,
 }
 static void* ChunkConvolution(void* ptr) {
     ThreadArgs* arg = ptr;
-    uc(*out)[] = arg->out;
+    uc(*buf)[] = arg->buf;
     for (int iteration = 0; iteration < arg->times; ++iteration) {
         for (size_t i = arg->begin; i < arg->end; ++i) {
-            Convolution(arg->img, i, arg->ker, out);
+            Convolution(arg->img, i, arg->ker, buf);
         }
         int status = pthread_barrier_wait(arg->barrier);
         if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) {
             perror("pthread_barrier_wait");
-            pthread_exit(NULL);
+            exit(EXIT_FAILURE);
         }
         uc(*temp)[] = arg->img->matrix;
-        arg->img->matrix = out;
-        out = temp;
+        arg->img->matrix = buf;
+        buf = temp;
     }
     return NULL;
 }
 
-uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
+uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*buffer)[], unsigned long threadsNum) {
     assert(kernel->order % 2 == 1 && img->channels <= MAX_CHANNELS);
     int status;
     size_t matrixSize = img->height * img->width;
     pthread_barrier_t barrier;
-    status = pthread_barrier_init(&barrier, NULL, THREAD_NUM);
+    status = pthread_barrier_init(&barrier, NULL, threadsNum);
     if (status != 0) {
         perror("pthread_barrier_init");
         exit(status);
     }
-    pthread_t threads[THREAD_NUM];
-    ThreadArgs args[THREAD_NUM];
-    size_t pixelsPerThread = matrixSize / THREAD_NUM;
 
-    for (int i = 0; i < THREAD_NUM; ++i) {
+    pthread_t threads[threadsNum];
+    ThreadArgs args[threadsNum];
+    size_t pixelsPerThread = matrixSize / threadsNum;
+
+    for (unsigned long i = 0; i < threadsNum; ++i) {
         size_t begin = i * pixelsPerThread;
-        size_t end = i == THREAD_NUM - 1 ? matrixSize : begin + pixelsPerThread;
+        size_t end = i == threadsNum - 1 ? matrixSize : begin + pixelsPerThread;
         args[i] = (ThreadArgs){.img = img,
                                .begin = begin,
                                .end = end,
                                .ker = kernel,
-                               .out = output,
+                               .buf = buffer,
                                .times = k,
                                .barrier = &barrier};
         status = pthread_create(&threads[i], NULL, ChunkConvolution, &args[i]);
@@ -99,9 +100,10 @@ uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*output)[]) {
             exit(status);
         }
     }
-    for (int i = 0; i < THREAD_NUM; ++i) {
+    for (unsigned long i = 0; i < threadsNum; ++i) {
         pthread_join(threads[i], NULL);
     }
+    
     pthread_barrier_destroy(&barrier);
-    return (uc*)(k % 2 == 1 ? output : img->matrix);
+    return (uc*)(k % 2 == 1 ? buffer : img->matrix);
 }
