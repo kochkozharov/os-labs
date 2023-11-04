@@ -7,7 +7,7 @@
 
 #include "blur.h"
 
-//#define TEST
+#define TEST
 //для теста эффективности многопоточности
 
 typedef enum { gauss, box } TFilter;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     const Kernel *ker = &GAUSSIAN5;
 
 #ifdef TEST
-    stbi_uc *weakPtr;
+    const stbi_uc *weakPtr;
     for (int threads = 1; threads < 21; ++threads) {
         printf("Applying gaussian blur 20 times on %d threads\n", threads);
 #else
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
                                        .channels = channels},
                               ker, 20, (stbi_uc(*)[])buf, threads);
 #else
-    stbi_uc *weakPtr =
+    const stbi_uc *weakPtr =
         ApplyKernel(&(Image){.matrix = (stbi_uc(*)[])img,
                              .width = width,
                              .height = height,

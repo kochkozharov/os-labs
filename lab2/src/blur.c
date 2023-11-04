@@ -70,7 +70,7 @@ static void* ChunkConvolution(void* ptr) {
     return NULL;
 }
 
-uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*buffer)[], unsigned long threadsNum) {
+const uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*buffer)[], unsigned long threadsNum) {
     assert(kernel->order % 2 == 1 && img->channels <= MAX_CHANNELS);
     int status;
     size_t matrixSize = img->height * img->width;
