@@ -15,6 +15,7 @@ static void Convolution(const Image* img, size_t idx, const Kernel* ker,
     const size_t absI = idx / img->width * img->channels;
     const size_t absJ = idx % img->width * img->channels;
     size_t sum[MAX_CHANNELS] = {0};
+
     for (int i = -(ker->order / 2); i <= ker->order / 2; ++i) {
         for (int j = -ker->order / 2; j <= ker->order / 2; ++j) {
             const int kerI = i + ker->order / 2;
@@ -80,8 +81,8 @@ uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*buffer)[], unsigne
         exit(status);
     }
 
-    pthread_t threads[threadsNum];
-    ThreadArgs args[threadsNum];
+    pthread_t *threads=malloc(threadsNum*sizeof(pthread_t));
+    ThreadArgs *args=malloc(threadsNum*sizeof(ThreadArgs));
     size_t pixelsPerThread = matrixSize / threadsNum;
 
     for (unsigned long i = 0; i < threadsNum; ++i) {
@@ -103,7 +104,9 @@ uc* ApplyKernel(Image* img, const Kernel* kernel, int k, uc (*buffer)[], unsigne
     for (unsigned long i = 0; i < threadsNum; ++i) {
         pthread_join(threads[i], NULL);
     }
-    
+
     pthread_barrier_destroy(&barrier);
+    free(threads);
+    free(args);
     return (uc*)(k % 2 == 1 ? buffer : img->matrix);
 }
