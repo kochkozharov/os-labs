@@ -4,14 +4,6 @@ extern "C" {
 #include "blur.h"
 }
 
-#include <array>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <memory>
-
-namespace fs = std::filesystem;
-
 TEST(SecondLabTests, SimpleTest) {
     const size_t width = 4;
     const size_t height = 2;
@@ -31,7 +23,7 @@ TEST(SecondLabTests, SimpleTest) {
             EXPECT_EQ(c, rc);
         }
     }
-
+    //тот же результат при многопоточной обработке
     memcpy(imgMat, example, width * height);
     img.matrix = reinterpret_cast<uc(*)[]>(imgMat);
     weakPtr = ApplyKernel(&img, &ker, 1, reinterpret_cast<uc(*)[]>(buf), 1);

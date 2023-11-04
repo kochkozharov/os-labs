@@ -7,7 +7,8 @@
 
 #include "blur.h"
 
-#define TEST
+//#define TEST
+//для теста эффективности многопоточности
 
 typedef enum { gauss, box } TFilter;
 
@@ -37,8 +38,12 @@ static const Kernel BOX3 = {
 
 int main(int argc, char *argv[]) {
 #ifdef TEST
-    (void)argc;
     (void)BOX3;
+    if (argc < 2) {
+        fprintf(stderr,
+                "Usage: blur INPUT_FNAME\n");
+        exit(EXIT_SUCCESS);
+    }
 #else
     if (argc < 3 || strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
