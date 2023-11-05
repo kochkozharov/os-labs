@@ -7,7 +7,7 @@
 
 #include "blur.h"
 
-#define TEST
+//#define TEST
 //для теста эффективности многопоточности
 
 typedef enum { gauss, box } TFilter;

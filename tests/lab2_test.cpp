@@ -15,7 +15,7 @@ TEST(SecondLabTests, SimpleTest) {
     const Kernel ker = {reinterpret_cast<const int(*)[]>(kerMat), 3, 9};
     uc buf[height][width];
     const uc excpectedRes[height][width] = {{1, 2, 3, 3}, {1, 2, 3, 3}};
-    const uc *weakPtr = ApplyKernel(&img, &ker, 1, reinterpret_cast<uc(*)[]>(buf), 2);
+    const uc *weakPtr = ApplyKernel(&img, &ker, 1, reinterpret_cast<uc(*)[]>(buf), 1);
     for (unsigned int i = 0; i < height; ++i) {
         for (unsigned int j = 0; j < width; ++j) {
             uc c = *(weakPtr + i * width + j);
@@ -26,7 +26,7 @@ TEST(SecondLabTests, SimpleTest) {
     //тот же результат при многопоточной обработке
     memcpy(imgMat, example, width * height);
     img.matrix = reinterpret_cast<uc(*)[]>(imgMat);
-    weakPtr = ApplyKernel(&img, &ker, 1, reinterpret_cast<uc(*)[]>(buf), 1);
+    weakPtr = ApplyKernel(&img, &ker, 1, reinterpret_cast<uc(*)[]>(buf), 4);
     for (unsigned int i = 0; i < height; ++i) {
         for (unsigned int j = 0; j < width; ++j) {
             uc c = *(weakPtr + i * width + j);
