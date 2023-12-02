@@ -11,7 +11,7 @@
 int main(void) {
     ssize_t nread;
     char* memptr = (char*)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE,
-                               MAP_SHARED | MAP_ANONYMOUS, 1, 0);
+                               MAP_SHARED, 1, 0);
     sigset_t sigset;
     sigemptyset(&sigset);
     sigaddset(&sigset, SIGUSR1);
@@ -29,5 +29,6 @@ int main(void) {
             break;
         }
     }
+    munmap(memptr,MAP_SIZE);
     return 0;
 }

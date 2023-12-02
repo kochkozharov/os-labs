@@ -28,10 +28,10 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
     GOTO_IF(ftruncate(sharedMemoryFd2, MAP_SIZE) == -1, "ftruncate", err);
 
     char* memptr1 = (char*)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE,
-                                MAP_SHARED | MAP_ANONYMOUS, sharedMemoryFd1, 0);
+                                MAP_SHARED, sharedMemoryFd1, 0);
     GOTO_IF(!memptr1, "mmap", err);
     char* memptr2 = (char*)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE,
-                                MAP_SHARED | MAP_ANONYMOUS, sharedMemoryFd2, 0);
+                                MAP_SHARED, sharedMemoryFd2, 0);
     GOTO_IF(!memptr2, "mmap", err);
 
     errno = 0;
