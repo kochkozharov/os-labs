@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "error_handling.h"
@@ -41,6 +42,10 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
         sem_open(REV_SEMAPHORE_1, O_CREAT, S_IRUSR | S_IWUSR, 0);
     sem_t* revsemptr2 =
         sem_open(REV_SEMAPHORE_2, O_CREAT, S_IRUSR | S_IWUSR, 0);
+    GOTO_IF(!wsemptr1, "sem_open", err);
+    GOTO_IF(!wsemptr2, "sem_open", err);
+    GOTO_IF(!revsemptr1, "sem_open", err);
+    GOTO_IF(!revsemptr2, "sem_open", err);
 
     errno = 0;
     ssize_t nread = getline(&line, &len, stream);
@@ -76,53 +81,65 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
     }
 
     if (pids[0] == 0) {  // child1
-        ABORT_IF(close(fds[1]), "close");
+        close(fds[1]);
         fds[1] = -1;
 
         GOTO_IF(dup2(sharedMemoryFd1, STDIN_FILENO) == -1, "dup2", err);
         GOTO_IF(dup2(fds[0], STDOUT_FILENO) == -1, "dup2", err);
-        ABORT_IF(close(fds[0]), "close");
+        close(fds[0]);
         fds[0] = -1;
 
         GOTO_IF(execl(pathToChild, "child_lab3", W_SEMAPHORE_1, REV_SEMAPHORE_1,
                       NULL),
                 "execl", err);
     } else if (pids[1] == 0) {  // child2
-        ABORT_IF(close(fds[0]), "close");
+        close(fds[0]);
         fds[0] = -1;
-        GOTO_IF(dup2(sharedMemoryFd2, STDIN_FILENO) == -1, "dup2", err);
 
+        GOTO_IF(dup2(sharedMemoryFd2, STDIN_FILENO) == -1, "dup2", err);
         GOTO_IF(dup2(fds[1], STDOUT_FILENO) == -1, "dup2", err);
-        ABORT_IF(close(fds[1]), "close");
+        close(fds[1]);
         fds[1] = -1;
 
         GOTO_IF(execl(pathToChild, "child_lab3", W_SEMAPHORE_2, REV_SEMAPHORE_2,
                       NULL),
                 "execl", err);
     } else {  // parent
-        ABORT_IF(close(fds[0]), "close");
+        close(fds[0]);
         fds[0] = -1;
-        ABORT_IF(close(fds[1]), "close");
+        close(fds[1]);
         fds[1] = -1;
         while ((nread = getline(&line, &len, stream)) != -1) {
             if (nread <= FILTER_LEN) {
-                sem_wait(wsemptr1);
-                strncpy(memptr1 + 1, line, nread+1);
+                struct timespec ts;
+                GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1,
+                        "clock_gettime", err);
+                ts.tv_sec += 1;
+                GOTO_IF(sem_timedwait(wsemptr1, &ts) == -1, "sem_timeout", err);
+                strncpy(memptr1 + 1, line, nread + 1);
                 memptr1[0] = 0;
                 sem_post(revsemptr1);
             } else {
-                sem_wait(wsemptr2);
-                strncpy(memptr2 + 1, line, nread+1);
+                struct timespec ts;
+                GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1,
+                        "clock_gettime", err);
+                ts.tv_sec += 1;
+                GOTO_IF(sem_timedwait(wsemptr2, &ts) == -1, "sem_timeout", err);
+                strncpy(memptr2 + 1, line, nread + 1);
                 memptr2[0] = 0;
                 sem_post(revsemptr2);
             }
         }
-
-        sem_wait(wsemptr1);
+        struct timespec ts;
+        GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1, "clock_gettime", err);
+        ts.tv_sec += 1;
+        GOTO_IF(sem_timedwait(wsemptr1, &ts) == -1, "sem_timeout", err);
+        GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1, "clock_gettime", err);
+        ts.tv_sec += 1;
+        GOTO_IF(sem_timedwait(wsemptr2, &ts) == -1, "sem_timeout", err);
         memptr1[0] = -1;
-        sem_post(revsemptr1);
-        sem_wait(wsemptr2);
         memptr2[0] = -1;
+        sem_post(revsemptr1);
         sem_post(revsemptr2);
 
         GOTO_IF(errno == ENOMEM, "getline", err);
