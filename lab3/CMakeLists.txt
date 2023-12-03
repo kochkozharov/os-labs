@@ -5,13 +5,13 @@ add_executable(lab3
                include/error_handling.h
                )
 
-add_executable(child
+add_executable(child_lab3
                src/child.c
                include/utils.h src/utils.c 
                include/error_handling.h
                )
 
 target_include_directories(lab3 PRIVATE include)
-target_include_directories(child PRIVATE include)
+target_include_directories(child_lab3 PRIVATE include)
 
-add_dependencies(lab3 child)
+add_dependencies(lab3 child_lab3)

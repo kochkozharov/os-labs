@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 extern "C" {
-#include "lab1.h"
+#include "lab3.h"
 }
 
 #include <array>

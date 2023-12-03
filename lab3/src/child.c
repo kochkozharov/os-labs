@@ -1,4 +1,7 @@
 #include <errno.h>
+#include <fcntl.h>
+#include <semaphore.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -8,27 +11,26 @@
 #include "error_handling.h"
 #include "utils.h"
 
-int main(void) {
-    ssize_t nread;
+int main(int argc, char* argv[]) {
+    (void)argc;
     char* memptr = (char*)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE,
-                               MAP_SHARED, 1, 0);
-    sigset_t sigset;
-    sigemptyset(&sigset);
-    sigaddset(&sigset, SIGUSR1);
-    sigaddset(&sigset, SIGUSR2);
-    int sig;
-    sigprocmask(SIG_SETMASK, &sigset, NULL);
+                               MAP_SHARED, STDIN_FILENO, 0);
+    sem_t* wsemptr = sem_open(argv[1], 0);
+    sem_t* revsemptr = sem_open(argv[2], 0);
     while (1) {
-        sigwait(&sigset, &sig);
-        if (sig == SIGUSR1) {
-            size_t len = strlen(memptr);
-            ReverseString(memptr, len - 1);
-            kill(getppid(), SIGUSR1);
-            printf("%s", memptr);
+        sem_wait(revsemptr);
+
+        if (memptr[0] == 0) {
+            size_t len = strlen(memptr + 1);
+            ReverseString(memptr + 1, len - 1);
+            printf("%s", memptr + 1);
+            sem_post(wsemptr);
         } else {
             break;
         }
     }
-    munmap(memptr,MAP_SIZE);
+    sem_close(revsemptr);
+    sem_close(wsemptr);
+    munmap(memptr, MAP_SIZE);
     return 0;
 }
