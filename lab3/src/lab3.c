@@ -20,32 +20,22 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
     char* extraLine = NULL;
     size_t extraLen = 0;
 
-    int sharedMemoryFd1 =
-        shm_open(SHARED_MEMORY_NAME_1, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    GOTO_IF(sharedMemoryFd1 == -1, "shm_open", err);
-    GOTO_IF(ftruncate(sharedMemoryFd1, MAP_SIZE) == -1, "ftruncate", err);
-    int sharedMemoryFd2 =
-        shm_open(SHARED_MEMORY_NAME_2, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    GOTO_IF(sharedMemoryFd2 == -1, "shm_open", err);
-    GOTO_IF(ftruncate(sharedMemoryFd2, MAP_SIZE) == -1, "ftruncate", err);
+    SharedMemory shm1;
+    SharedMemory shm2;
+    GOTO_IF(CreateSharedMemory(&shm1, SHARED_MEMORY_NAME_1, MAP_SIZE),
+            "CreateSharedMemory", err);
+    GOTO_IF(CreateSharedMemory(&shm2, SHARED_MEMORY_NAME_2, MAP_SIZE),
+            "CreateSharedMemory", err);
 
-    char* memptr1 = (char*)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE,
-                                MAP_SHARED, sharedMemoryFd1, 0);
-    GOTO_IF(!memptr1, "mmap", err);
-    char* memptr2 = (char*)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE,
-                                MAP_SHARED, sharedMemoryFd2, 0);
-    GOTO_IF(!memptr2, "mmap", err);
+    SemaphorePair pair1;
+    SemaphorePair pair2;
 
-    sem_t* wsemptr1 = sem_open(W_SEMAPHORE_1, O_CREAT, S_IRUSR | S_IWUSR, 1);
-    sem_t* wsemptr2 = sem_open(W_SEMAPHORE_2, O_CREAT, S_IRUSR | S_IWUSR, 1);
-    sem_t* revsemptr1 =
-        sem_open(REV_SEMAPHORE_1, O_CREAT, S_IRUSR | S_IWUSR, 0);
-    sem_t* revsemptr2 =
-        sem_open(REV_SEMAPHORE_2, O_CREAT, S_IRUSR | S_IWUSR, 0);
-    GOTO_IF(!wsemptr1, "sem_open", err);
-    GOTO_IF(!wsemptr2, "sem_open", err);
-    GOTO_IF(!revsemptr1, "sem_open", err);
-    GOTO_IF(!revsemptr2, "sem_open", err);
+    GOTO_IF(CreateSemaphorePair(&pair1, W_SEMAPHORE_NAME_1,
+                                REV_SEMAPHORE_NAME_1) == -1,
+            "CreateSemaphorePair", err);
+    GOTO_IF(CreateSemaphorePair(&pair2, W_SEMAPHORE_NAME_2,
+                                REV_SEMAPHORE_NAME_2) == -1,
+            "CreateSemaphorePair", err);
 
     errno = 0;
     ssize_t nread = getline(&line, &len, stream);
@@ -84,25 +74,25 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
         close(fds[1]);
         fds[1] = -1;
 
-        GOTO_IF(dup2(sharedMemoryFd1, STDIN_FILENO) == -1, "dup2", err);
+        GOTO_IF(dup2(shm1.fd, STDIN_FILENO) == -1, "dup2", err);
         GOTO_IF(dup2(fds[0], STDOUT_FILENO) == -1, "dup2", err);
         close(fds[0]);
         fds[0] = -1;
 
-        GOTO_IF(execl(pathToChild, "child_lab3", W_SEMAPHORE_1, REV_SEMAPHORE_1,
-                      NULL),
+        GOTO_IF(execl(pathToChild, "child_lab3", pair1.wsemname,
+                      pair1.revsemname, NULL),
                 "execl", err);
     } else if (pids[1] == 0) {  // child2
         close(fds[0]);
         fds[0] = -1;
 
-        GOTO_IF(dup2(sharedMemoryFd2, STDIN_FILENO) == -1, "dup2", err);
+        GOTO_IF(dup2(shm2.fd, STDIN_FILENO) == -1, "dup2", err);
         GOTO_IF(dup2(fds[1], STDOUT_FILENO) == -1, "dup2", err);
         close(fds[1]);
         fds[1] = -1;
 
-        GOTO_IF(execl(pathToChild, "child_lab3", W_SEMAPHORE_2, REV_SEMAPHORE_2,
-                      NULL),
+        GOTO_IF(execl(pathToChild, "child_lab3", pair2.wsemname,
+                      pair2.revsemname, NULL),
                 "execl", err);
     } else {  // parent
         close(fds[0]);
@@ -111,36 +101,24 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
         fds[1] = -1;
         while ((nread = getline(&line, &len, stream)) != -1) {
             if (nread <= FILTER_LEN) {
-                struct timespec ts;
-                GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1,
-                        "clock_gettime", err);
-                ts.tv_sec += 1;
-                GOTO_IF(sem_timedwait(wsemptr1, &ts) == -1, "sem_timeout", err);
-                strncpy(memptr1 + 1, line, nread + 1);
-                memptr1[0] = 0;
-                sem_post(revsemptr1);
+                GOTO_IF(SemTimedWait(pair1.wsemptr) == -1, "semTimeout", err);
+                strncpy(shm1.ptr + 1, line, nread + 1);
+                shm1.ptr[0] = 0;
+                sem_post(pair1.revsemptr);
             } else {
-                struct timespec ts;
-                GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1,
-                        "clock_gettime", err);
-                ts.tv_sec += 1;
-                GOTO_IF(sem_timedwait(wsemptr2, &ts) == -1, "sem_timeout", err);
-                strncpy(memptr2 + 1, line, nread + 1);
-                memptr2[0] = 0;
-                sem_post(revsemptr2);
+                GOTO_IF(SemTimedWait(pair2.wsemptr) == -1, "semTimeout", err);
+                strncpy(shm2.ptr + 1, line, nread + 1);
+                shm2.ptr[0] = 0;
+                sem_post(pair2.revsemptr);
             }
         }
-        struct timespec ts;
-        GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1, "clock_gettime", err);
-        ts.tv_sec += 1;
-        GOTO_IF(sem_timedwait(wsemptr1, &ts) == -1, "sem_timeout", err);
-        GOTO_IF(clock_gettime(CLOCK_REALTIME, &ts) == -1, "clock_gettime", err);
-        ts.tv_sec += 1;
-        GOTO_IF(sem_timedwait(wsemptr2, &ts) == -1, "sem_timeout", err);
-        memptr1[0] = -1;
-        memptr2[0] = -1;
-        sem_post(revsemptr1);
-        sem_post(revsemptr2);
+
+        GOTO_IF(SemTimedWait(pair1.wsemptr) == -1, "semTimeout", err);
+        GOTO_IF(SemTimedWait(pair2.wsemptr) == -1, "semTimeout", err);
+        shm1.ptr[0] = -1;
+        shm2.ptr[0] = -1;
+        sem_post(pair2.revsemptr);
+        sem_post(pair1.revsemptr);
 
         GOTO_IF(errno == ENOMEM, "getline", err);
 
@@ -152,18 +130,10 @@ int ParentRoutine(const char* pathToChild, FILE* stream) {
         }
 
         free(line);
-        sem_unlink(W_SEMAPHORE_1);
-        sem_close(wsemptr1);
-        sem_unlink(W_SEMAPHORE_2);
-        sem_close(wsemptr2);
-        sem_unlink(REV_SEMAPHORE_1);
-        sem_close(revsemptr1);
-        sem_unlink(REV_SEMAPHORE_2);
-        sem_close(revsemptr2);
-        shm_unlink(SHARED_MEMORY_NAME_1);
-        shm_unlink(SHARED_MEMORY_NAME_2);
-        munmap(memptr1, MAP_SIZE);
-        munmap(memptr2, MAP_SIZE);
+        DestroySemaphorePair(&pair1);
+        DestroySemaphorePair(&pair2);
+        DestroySharedMemory(&shm1);
+        DestroySharedMemory(&shm2);
     }
 
     return 0;
@@ -174,18 +144,10 @@ err:
     errno = 0;
     close(fds[0]);
     close(fds[1]);
-    sem_unlink(W_SEMAPHORE_1);
-    sem_close(wsemptr1);
-    sem_unlink(W_SEMAPHORE_2);
-    sem_close(wsemptr2);
-    sem_unlink(REV_SEMAPHORE_1);
-    sem_close(revsemptr1);
-    sem_unlink(REV_SEMAPHORE_2);
-    sem_close(revsemptr2);
-    shm_unlink(SHARED_MEMORY_NAME_1);
-    shm_unlink(SHARED_MEMORY_NAME_2);
-    munmap(memptr1, MAP_SIZE);
-    munmap(memptr2, MAP_SIZE);
+    DestroySemaphorePair(&pair1);
+    DestroySemaphorePair(&pair2);
+    DestroySharedMemory(&shm1);
+    DestroySharedMemory(&shm2);
     if (errno == EIO) {
         abort();
     }
