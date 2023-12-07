@@ -11,3 +11,6 @@ target_link_libraries(lab2_test GTest::gtest GTest::gtest_main)
 target_include_directories(lab2_test PRIVATE ../lab2/include)
 add_test(lab2_test lab2_test)
 
+add_executable(lab4_test lab4_test.cpp)
+target_link_libraries(lab4_test GTest::gtest GTest::gtest_main )
+add_test(lab4_test lab4_test)
