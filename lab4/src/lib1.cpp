@@ -2,14 +2,13 @@
 #include <string.h>
 
 #include "lib.h"
-
-void ReverseString(char* string, size_t length);
+#include "utils.h"
 
 char* Translation(long x) {
     if (x < 0) {
-        return NULL;
+        return nullptr;
     }
-    char* binary = (char*)malloc(NUM_BUFER_SIZE);
+    char* binary = (char*)malloc(NUM_BUFFER_SIZE);
     if (!binary) {
         return binary;
     }
@@ -34,12 +33,4 @@ int GCD(int a, int b) {
         b = tmp;
     }
     return a;
-}
-
-void ReverseString(char* string, size_t length) {
-    for (size_t i = 0; i < length >> 1; ++i) {
-        char temp = string[i];
-        string[i] = string[length - i - 1];
-        string[length - i - 1] = temp;
-    }
 }

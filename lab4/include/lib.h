@@ -1,11 +1,8 @@
+#pragma once
 
-#ifndef LAB4_H
-#define LAB4_H
+constexpr int NUM_BUFFER_SIZE = 33;
 
-#define NUM_BUFER_SIZE 33
-
+extern "C" {
 char* Translation(long x);
-
 int GCD(int a, int b);
-
-#endif
+}
