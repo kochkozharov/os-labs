@@ -1,11 +1,10 @@
-
 #include <gtest/gtest.h>
+#include <signal.h>
 
 #include "node.h"
 #include "topology.h"
- #include <signal.h>
 
-TEST(Lab5Tests, TopologyTest) {
+TEST(Lab5Tests, TopologyF) {
     Topology t;
     ASSERT_EQ(t.find(100), t.end());
     ASSERT_TRUE(t.insert(1, -1));

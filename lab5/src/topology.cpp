@@ -35,7 +35,7 @@ Topology::TopoIter Topology::find(NodeId id) {
     auto it = begin();
     for (size_t i = 0; i < lists.size(); ++i) {
         it.it2 = it.it1->begin();
-        for (size_t j = 0; j < (*it.it1).size(); ++j) {
+        for (size_t j = 0; j < it.it1->size(); ++j) {
             if (*it.it2 == id) {
                 return it;
             }
