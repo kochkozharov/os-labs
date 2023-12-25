@@ -2,9 +2,7 @@
 
 #include "stdexcept"
 
-ControlNode::ControlNode() : sock(zmq::socket_type::req) {
-
-}
+ControlNode::ControlNode() : sock(zmq::socket_type::req) {}
 
 ControlNode &ControlNode::get() {
     static ControlNode instance;
@@ -28,6 +26,18 @@ ComputationNode::ComputationNode(int id) : sock(zmq::socket_type::rep), id(id) {
 
 ComputationNode::~ComputationNode() { sock.unbind(id); }
 
+std::string ComputationNode::findAllOccurencies(const std::string &hay,
+                                                const std::string &needle) {
+    std::string repMsg = "";
+    std::size_t pos = hay.find(needle, 0);
+    while (pos != std::string::npos) {
+        repMsg += std::to_string(pos) + ';';
+        pos = hay.find(needle, pos + 1);
+    }
+    repMsg.pop_back();
+    return repMsg;
+}
+
 void ComputationNode::computationLoop() {
     while (true) {
         auto reqMsg = sock.recieveMessage(false);
@@ -35,32 +45,11 @@ void ComputationNode::computationLoop() {
         std::string command;
         ss >> command;
         if (command == "exec") {
-            std::string repMsg = "Ok: " + std::to_string(id) + ": ";
             std::string hay, needle;
             ss >> hay >> needle;
-
-            std::size_t pos = hay.find(needle, 0);
-            while (pos != std::string::npos) {
-                repMsg += std::to_string(pos) + ';';
-                pos = hay.find(needle, pos + 1);
-            }
-            repMsg.pop_back();
-            sock.sendMessage(repMsg);
+            sock.sendMessage("Ok: " + std::to_string(id) + ' ' + findAllOccurencies(hay, needle));
         } else if (command == "ping") {
             sock.sendMessage("pong");
         }
-        else if (command == "kill") {
-            sock.sendMessage("killed");
-            break;
-        }
     }
-}
-
-bool ControlNode::tryConnect(int id) {
-    try {
-        sock.connect(id);
-    } catch (...) {
-        return false;
-    }
-    return true;
 }

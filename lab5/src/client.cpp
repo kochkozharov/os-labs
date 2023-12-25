@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "node.h"
-#include "sys/wait.h"
 #include "topology.h"
 
 int main(int argc, char *argv[]) {
@@ -11,9 +10,9 @@ int main(int argc, char *argv[]) {
         std::cerr << "Not enough arguments\n";
         std::exit(EXIT_FAILURE);
     }
-    int forksCount = 0;
     std::string command;
     std::cout << "> ";
+
     while (std::cin >> command) {
         if (command == "create") {
             int id, parentId;
@@ -23,7 +22,6 @@ int main(int argc, char *argv[]) {
                 std::cout.flush();
                 continue;
             }
-            forksCount++;
             pid_t pid = fork();
             if (pid == -1) {
                 std::perror("fork");
@@ -36,9 +34,6 @@ int main(int argc, char *argv[]) {
             } else {
                 std::cout << "Ok: " + std::to_string(pid) + '\n';
             }
-            std::cout << "> ";
-            std::cout.flush();
-            continue;
         } else if (command == "ping") {
             int id;
             std::cin >> id;
@@ -48,10 +43,17 @@ int main(int argc, char *argv[]) {
                 std::cout.flush();
                 continue;
             }
-            if (ControlNode::get().tryConnect(id)) {
-                std::cout << "Ok: 1\n";
-            } else {
+            if (!ControlNode::get().send(id, "ping")) {
                 std::cout << "Ok: 0\n";
+                std::cout << "> ";
+                std::cout.flush();
+                continue;
+            }
+            auto responce = ControlNode::get().recieve();
+            if (responce == "pong") {
+                std::cerr << "Ok: 1\n";
+            } else {
+                std::cerr << "Ok: 0\n";
             }
         } else if (command == "exec") {
             int id;
@@ -66,42 +68,20 @@ int main(int argc, char *argv[]) {
             }
             if (!ControlNode::get().send(id, "exec " + hay + ' ' + needle)) {
                 std::cerr << "Error: Node is unavailable";
+                std::cout << "> ";
+                std::cout.flush();
+                continue;
             }
-
-        } else if (command == "kill") {
-            int id;
-            std::cin >> id;
-            if (Topology::get().erase(id)) {
-                if (ControlNode::get().send(id, "kill"))
-                    ControlNode::get().recieve();
-
-            } else if (command == "exit") {
-                auto iter = Topology::get().begin();
-                auto end = Topology::get().end();
-
-                for (; iter.it1 != end.it1; iter.it1++) {
-                    for (auto id : *iter.it1) {
-                        if (ControlNode::get().send(id, "kill"))
-                            ControlNode::get().recieve();
-                    }
-                }
+            auto responce = ControlNode::get().recieve();
+            if (responce) {
+                std::cout << responce.value() << '\n';
             }
-            break;
         } else {
             std::cout << "Unknown command\n";
-            std::cout << "> ";
-            std::cout.flush();
-            continue;
         }
-        auto responce = ControlNode::get().recieve();
-        if (responce) {
-            std::cout << responce.value() << '\n';
-        }
+
         std::cout << "> ";
         std::cout.flush();
     }
 
-    for (int i = 0; i < forksCount; ++i) {
-        wait(nullptr);
-    }
 }

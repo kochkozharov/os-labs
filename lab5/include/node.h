@@ -25,6 +25,7 @@ class ComputationNode {
     int id;
 
    public:
+    static std::string findAllOccurencies(const std::string &hay, const std::string &needle);
     void computationLoop();
     ComputationNode(int id);
     ~ComputationNode();
