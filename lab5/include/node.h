@@ -9,10 +9,10 @@ class ControlNode {
    private:
     Socket sock;
     ControlNode();
-    ControlNode(ControlNode const &) = delete;
-    ControlNode &operator=(ControlNode const &) = delete;
 
    public:
+    ControlNode(const ControlNode &other) = delete;
+    ControlNode &operator=(const ControlNode &other) = delete;
     static ControlNode &get();
     bool tryConnect(int id);
     bool send(int id, const std::string &msg);
@@ -25,7 +25,8 @@ class ComputationNode {
     int id;
 
    public:
-    static std::string findAllOccurencies(const std::string &hay, const std::string &needle);
+    static std::string findAllOccurencies(const std::string &hay,
+                                          const std::string &needle);
     void computationLoop();
     ComputationNode(int id);
     ~ComputationNode();

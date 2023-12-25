@@ -54,11 +54,6 @@ bool Topology::erase(int id) {
     return true;
 }
 
-Topology &Topology::get() {
-    static Topology instance;
-    return instance;
-}
-
 bool operator==(Topology::TopoIter it1, Topology::TopoIter it2) {
     return it1.it1 == it2.it1 && it1.it2 == it2.it2;
 }
@@ -66,3 +61,5 @@ bool operator==(Topology::TopoIter it1, Topology::TopoIter it2) {
 bool operator!=(Topology::TopoIter it1, Topology::TopoIter it2) {
     return !(it1 == it2);
 }
+
+bool Topology::contains(int id) { return find(id) != end(); }

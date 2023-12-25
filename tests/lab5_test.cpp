@@ -3,9 +3,10 @@
 
 #include "node.h"
 #include "topology.h"
+#include <unistd.h>
 
 TEST(Lab5Tests, TopologyTest) {
-    Topology &t = Topology::get();
+    Topology t;
     ASSERT_EQ(t.find(100), t.end());
     ASSERT_TRUE(t.insert(1, -1));
     ASSERT_EQ(t.find(1), t.begin());
@@ -57,4 +58,5 @@ TEST(Lab5Tests, ExecTest) {
     }
     ControlNode::get().send(1, "exec ooloo oo");
     ASSERT_EQ(ControlNode::get().receive().value(), "Ok: 1 0;3");
+    kill(pid, SIGKILL);
 }

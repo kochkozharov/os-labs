@@ -13,11 +13,13 @@ int main(int argc, char *argv[]) {
     std::string command;
     std::cout << "> ";
 
+    Topology topo;
+
     while (std::cin >> command) {
         if (command == "create") {
             int id, parentId;
             std::cin >> id >> parentId;
-            if (!Topology::get().insert(id, parentId)) {
+            if (!topo.insert(id, parentId)) {
                 std::cout << "> ";
                 std::cout.flush();
                 continue;
@@ -37,7 +39,7 @@ int main(int argc, char *argv[]) {
         } else if (command == "ping") {
             int id;
             std::cin >> id;
-            if (Topology::get().find(id) == Topology::get().end()) {
+            if (topo.contains(id)) {
                 std::cerr << "Error: Not found\n";
                 std::cout << "> ";
                 std::cout.flush();
@@ -60,7 +62,7 @@ int main(int argc, char *argv[]) {
 
             std::string hay, needle;
             std::cin >> id >> hay >> needle;
-            if (Topology::get().find(id) == Topology::get().end()) {
+            if (topo.contains(id)) {
                 std::cerr << "Error: " + std::to_string(id) + " Not found\n";
                 std::cout << "> ";
                 std::cout.flush();
@@ -74,7 +76,7 @@ int main(int argc, char *argv[]) {
             }
             auto response = ControlNode::get().receive();
             if (response) {
-                std::cout << response.value() << '\n';
+                std::cout << *response << '\n';
             }
         } else {
             std::cout << "Unknown command\n";

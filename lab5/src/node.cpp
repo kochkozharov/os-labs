@@ -11,7 +11,6 @@ ControlNode &ControlNode::get() {
 
 bool ControlNode::send(int id, const std::string &msg) {
     auto status = sock.connect(id) && sock.sendMessage(msg);
-    // sock.disconnect(id);
     return status;
 }
 
@@ -20,7 +19,6 @@ std::optional<std::string> ControlNode::receive() {
 }
 
 ComputationNode::ComputationNode(int id) : sock(zmq::socket_type::rep), id(id) {
-    // Topology::get().insert(id, parentId);
     sock.bind(id);
 }
 

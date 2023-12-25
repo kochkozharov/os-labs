@@ -7,9 +7,8 @@
 #include <stdexcept>
 #include <string>
 
-constexpr int MAIN_PORT = 4000;
-
 static std::string GetAddress(int sockId) {
+    constexpr int MAIN_PORT = 4000;
     return "tcp://127.0.0.1:" + std::to_string(MAIN_PORT + sockId);
 }
 
@@ -40,7 +39,7 @@ bool Socket::sendMessage(const std::string &msg) {
     return sock.send(zmq::buffer(msg), zmq::send_flags::none).has_value();
 }
 std::optional<std::string> Socket::receiveMessage(bool nowait) {
-    zmq::message_t zmsg {};
+    zmq::message_t zmsg{};
     auto len = sock.recv(
         zmsg, nowait ? zmq::recv_flags::dontwait : zmq::recv_flags::none);
     if (len) {
