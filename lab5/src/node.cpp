@@ -15,8 +15,8 @@ bool ControlNode::send(int id, const std::string &msg) {
     return status;
 }
 
-std::optional<std::string> ControlNode::recieve() {
-    return sock.recieveMessage(false);
+std::optional<std::string> ControlNode::receive() {
+    return sock.receiveMessage(false);
 }
 
 ComputationNode::ComputationNode(int id) : sock(zmq::socket_type::rep), id(id) {
@@ -40,7 +40,7 @@ std::string ComputationNode::findAllOccurencies(const std::string &hay,
 
 void ComputationNode::computationLoop() {
     while (true) {
-        auto reqMsg = sock.recieveMessage(false);
+        auto reqMsg = sock.receiveMessage(false);
         std::stringstream ss(reqMsg.value());
         std::string command;
         ss >> command;

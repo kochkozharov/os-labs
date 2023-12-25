@@ -15,5 +15,5 @@ class Socket {
     bool connect(int id);
     void disconnect(int id);
     bool sendMessage(const std::string &msg);
-    std::optional<std::string> recieveMessage(bool nowait);
+    std::optional<std::string> receiveMessage(bool nowait);
 };

@@ -39,7 +39,7 @@ void Socket::unbind(int id) { sock.unbind(GetAddress(id)); }
 bool Socket::sendMessage(const std::string &msg) {
     return sock.send(zmq::buffer(msg), zmq::send_flags::none).has_value();
 }
-std::optional<std::string> Socket::recieveMessage(bool nowait) {
+std::optional<std::string> Socket::receiveMessage(bool nowait) {
     zmq::message_t zmsg {};
     auto len = sock.recv(
         zmsg, nowait ? zmq::recv_flags::dontwait : zmq::recv_flags::none);

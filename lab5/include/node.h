@@ -16,7 +16,7 @@ class ControlNode {
     static ControlNode &get();
     bool tryConnect(int id);
     bool send(int id, const std::string &msg);
-    std::optional<std::string> recieve();
+    std::optional<std::string> receive();
 };
 
 class ComputationNode {

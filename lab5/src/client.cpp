@@ -49,8 +49,8 @@ int main(int argc, char *argv[]) {
                 std::cout.flush();
                 continue;
             }
-            auto responce = ControlNode::get().recieve();
-            if (responce == "pong") {
+            auto response = ControlNode::get().receive();
+            if (response == "pong") {
                 std::cerr << "Ok: 1\n";
             } else {
                 std::cerr << "Ok: 0\n";
@@ -72,9 +72,9 @@ int main(int argc, char *argv[]) {
                 std::cout.flush();
                 continue;
             }
-            auto responce = ControlNode::get().recieve();
-            if (responce) {
-                std::cout << responce.value() << '\n';
+            auto response = ControlNode::get().receive();
+            if (response) {
+                std::cout << response.value() << '\n';
             }
         } else {
             std::cout << "Unknown command\n";

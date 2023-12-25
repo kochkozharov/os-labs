@@ -56,5 +56,5 @@ TEST(Lab5Tests, ExecTest) {
               nullptr);
     }
     ControlNode::get().send(1, "exec ooloo oo");
-    ASSERT_EQ(ControlNode::get().recieve().value(), "Ok: 1 0;3");
+    ASSERT_EQ(ControlNode::get().receive().value(), "Ok: 1 0;3");
 }
