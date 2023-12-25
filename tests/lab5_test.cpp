@@ -3,7 +3,7 @@
 
 #include "node.h"
 #include "topology.h"
-#include <unistd.h>
+ #include <signal.h>
 
 TEST(Lab5Tests, TopologyTest) {
     Topology t;

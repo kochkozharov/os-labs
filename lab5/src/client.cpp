@@ -4,6 +4,7 @@
 
 #include "node.h"
 #include "topology.h"
+ #include <signal.h>
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -19,11 +20,7 @@ int main(int argc, char *argv[]) {
         if (command == "create") {
             int id, parentId;
             std::cin >> id >> parentId;
-            if (!topo.insert(id, parentId)) {
-                std::cout << "> ";
-                std::cout.flush();
-                continue;
-            }
+
             pid_t pid = fork();
             if (pid == -1) {
                 std::perror("fork");
@@ -34,6 +31,11 @@ int main(int argc, char *argv[]) {
                       std::to_string(parentId).c_str(), nullptr);
 
             } else {
+                if (!topo.insert(Topology::NodeId(id, pid), parentId)) {
+                    std::cout << "> ";
+                    std::cout.flush();
+                    continue;
+                }
                 std::cout << "Ok: " + std::to_string(pid) + '\n';
             }
         } else if (command == "ping") {
@@ -85,5 +87,14 @@ int main(int argc, char *argv[]) {
         std::cout << "> ";
         std::cout.flush();
     }
-
+    auto it = topo.begin();
+    auto end = topo.end();
+    for (;it.it1 != end.it1; it.it1++) {
+        it.it2 = it.it1->begin();
+        for (;it.it2 != it.it1->end(); it.it2++) {
+            kill(it.it2->pid, SIGKILL);
+            it.it2++;
+        }
+        it.it1++;
+    }
 }

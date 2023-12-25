@@ -1,11 +1,15 @@
 #include "topology.h"
 
+Topology::NodeId::operator int() {
+    return id;
+}
+
 Topology::TopoIter Topology::begin() {
     return {lists.begin(), lists.begin()->begin()};
 }
 Topology::TopoIter Topology::end() { return {lists.end(), lists.end()->end()}; }
 
-bool Topology::insert(int id, int parentId) {
+bool Topology::insert(NodeId id, NodeId parentId) {
     auto coord = find(id);
     if (coord != end() || id == -1) {
         std::cerr << "Error: Already exists\n";
@@ -27,7 +31,7 @@ bool Topology::insert(int id, int parentId) {
     return true;
 }
 
-Topology::TopoIter Topology::find(int id) {
+Topology::TopoIter Topology::find(NodeId id) {
     auto it = begin();
     for (size_t i = 0; i < lists.size(); ++i) {
         it.it2 = it.it1->begin();
@@ -42,7 +46,7 @@ Topology::TopoIter Topology::find(int id) {
     return end();
 }
 
-bool Topology::erase(int id) {
+bool Topology::erase(NodeId id) {
     auto coord = find(id);
     if (coord == end() || id == -1) {
         return false;
@@ -62,4 +66,4 @@ bool operator!=(Topology::TopoIter it1, Topology::TopoIter it2) {
     return !(it1 == it2);
 }
 
-bool Topology::contains(int id) { return find(id) != end(); }
+bool Topology::contains(NodeId id) { return find(id) != end(); }
