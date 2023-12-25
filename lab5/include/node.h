@@ -3,15 +3,19 @@
 #include "memory"
 #include "socket.h"
 
+constexpr int CTRL_NODE_ID = -1;
+
 class ControlNode {
    private:
     Socket sock;
     ControlNode();
     ControlNode(ControlNode const &) = delete;
     ControlNode &operator=(ControlNode const &) = delete;
+
    public:
     static ControlNode &get();
-    void send(int id, const std::string &msg);
+    bool tryConnect(int id);
+    bool send(int id, const std::string &msg);
     std::optional<std::string> recieve();
 };
 
@@ -21,7 +25,7 @@ class ComputationNode {
     int id;
 
    public:
-    void compute();
-    ComputationNode(int id, int parentId);
+    void computationLoop();
+    ComputationNode(int id);
     ~ComputationNode();
 };

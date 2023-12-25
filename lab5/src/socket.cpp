@@ -1,5 +1,4 @@
 #include <socket.h>
-#include <zmq.h>
 
 #include <iostream>
 #include <map>
@@ -7,15 +6,23 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-constexpr int MAIN_PORT = 5050;
+
+constexpr int MAIN_PORT = 4000;
 
 static std::string GetAddress(int sockId) {
-    return "tcp://localhost:" + std::to_string(MAIN_PORT + sockId);
+    return "tcp://127.0.0.1:" + std::to_string(MAIN_PORT + sockId);
 }
 
-Socket::Socket(int type) : sock(ctx, type) {}
+Socket::Socket(zmq::socket_type t) : sock(ctx, t) {}
 
-void Socket::connect(int id) { sock.connect(GetAddress(id)); }
+bool Socket::connect(int id) {
+    try {
+        sock.connect(GetAddress(id));
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
 
 void Socket::disconnect(int id) { sock.disconnect(GetAddress(id)); }
 
@@ -29,18 +36,15 @@ void Socket::bind(int id) {
 
 void Socket::unbind(int id) { sock.unbind(GetAddress(id)); }
 
-void Socket::sendMessage(const std::string &msg) {
-    zmq::message_t zmsg(msg.size());
-    memcpy(zmsg.data(), msg.c_str(), msg.size());
-    sock.send(zmsg, zmq::send_flags::none);
+bool Socket::sendMessage(const std::string &msg) {
+    return sock.send(zmq::buffer(msg), zmq::send_flags::none).has_value();
 }
 std::optional<std::string> Socket::recieveMessage(bool nowait) {
-    zmq::message_t zmsg;
+    zmq::message_t zmsg {};
     auto len = sock.recv(
         zmsg, nowait ? zmq::recv_flags::dontwait : zmq::recv_flags::none);
-    if (len.has_value()) {
-        std::string receivedMsg(static_cast<char *>(zmsg.data()), len.value());
-        return receivedMsg;
+    if (len) {
+        return zmsg.to_string();
     }
     return {};
 }

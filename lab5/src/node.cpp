@@ -1,46 +1,66 @@
 #include "node.h"
 
 #include "stdexcept"
-#include "topology.h"
 
-constexpr int CTRL_NODE_ID = -1;
+ControlNode::ControlNode() : sock(zmq::socket_type::req) {
+
+}
 
 ControlNode &ControlNode::get() {
     static ControlNode instance;
     return instance;
 }
 
-ControlNode::ControlNode() : sock(ZMQ_REQ) {}
-
-void ControlNode::send(int id, const std::string &msg) {
-    try {
-        sock.connect(id);
-    } catch (...) {
-        Topology::get().erase(id);
-        throw std::runtime_error("Error: " + std::to_string(id) +
-                                 " Node is unavailable");
-    }
-    sock.sendMessage(msg);
-    sock.disconnect(id);
+bool ControlNode::send(int id, const std::string &msg) {
+    auto status = sock.connect(id) && sock.sendMessage(msg);
+    // sock.disconnect(id);
+    return status;
 }
 
 std::optional<std::string> ControlNode::recieve() {
-    return sock.recieveMessage(true);
+    return sock.recieveMessage(false);
 }
 
-ComputationNode::ComputationNode(int id, int parentId) : sock(ZMQ_REP), id(id) {
-    if (id == CTRL_NODE_ID) {
-        throw std::invalid_argument("Error: Already exists");
-    }
-    Topology::get().insert(id, parentId);
+ComputationNode::ComputationNode(int id) : sock(zmq::socket_type::rep), id(id) {
+    // Topology::get().insert(id, parentId);
     sock.bind(id);
 }
 
 ComputationNode::~ComputationNode() { sock.unbind(id); }
 
+void ComputationNode::computationLoop() {
+    while (true) {
+        auto reqMsg = sock.recieveMessage(false);
+        std::stringstream ss(reqMsg.value());
+        std::string command;
+        ss >> command;
+        if (command == "exec") {
+            std::string repMsg = "Ok: " + std::to_string(id) + ": ";
+            std::string hay, needle;
+            ss >> hay >> needle;
 
-void ComputationNode::compute() {
-    auto reqMsg = sock.recieveMessage(false);
-    std::string repMsg;
-    sock.sendMessage(repMsg);
+            std::size_t pos = hay.find(needle, 0);
+            while (pos != std::string::npos) {
+                repMsg += std::to_string(pos) + ';';
+                pos = hay.find(needle, pos + 1);
+            }
+            repMsg.pop_back();
+            sock.sendMessage(repMsg);
+        } else if (command == "ping") {
+            sock.sendMessage("pong");
+        }
+        else if (command == "kill") {
+            sock.sendMessage("killed");
+            break;
+        }
+    }
+}
+
+bool ControlNode::tryConnect(int id) {
+    try {
+        sock.connect(id);
+    } catch (...) {
+        return false;
+    }
+    return true;
 }

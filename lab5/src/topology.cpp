@@ -5,45 +5,64 @@ Topology::TopoIter Topology::begin() {
 }
 Topology::TopoIter Topology::end() { return {lists.end(), lists.end()->end()}; }
 
-void Topology::insert(int id, int parentId) {
+bool Topology::insert(int id, int parentId) {
     auto coord = find(id);
-    if (coord != end()) {
-        throw std::runtime_error("Error: Already exists");
+    if (coord != end() || id == -1) {
+        std::cerr << "Error: Already exists\n";
+        return false;
     }
     if (parentId == -1) {
         lists.insert(lists.end(), std::list(1, id));
-        return;
+        return true;
     }
     auto coordParent = find(parentId);
     if (coordParent == end()) {
-        throw std::runtime_error("Error: Parent not found");
+        std::cerr << "Error: Parent not found\n";
+        return false;
     }
-    coordParent.it1->insert(coordParent.it2++, id);
+    if (coordParent.it2 != (coordParent.it1)->end()) {
+        coordParent.it2++;
+    }
+    coordParent.it1->insert(coordParent.it2, id);
+    return true;
 }
 
 Topology::TopoIter Topology::find(int id) {
     auto it = begin();
-    for (auto &lst : lists) {
-        for (auto n : lst) {
-            if (n == id) {
+    for (size_t i = 0; i < lists.size(); ++i) {
+        it.it2 = it.it1->begin();
+        for (size_t j = 0; j < (*it.it1).size(); ++j) {
+            if (*it.it2 == id) {
                 return it;
             }
             it.it2++;
         }
         it.it1++;
     }
-    return it;
+    return end();
 }
 
-void Topology::erase(int id) {
+bool Topology::erase(int id) {
     auto coord = find(id);
-    if (coord != end()) {
-        throw std::runtime_error("Error: Not exists");
+    if (coord == end() || id == -1) {
+        return false;
     }
     coord.it1->erase(coord.it2);
+    if (coord.it1->size() == 0) {
+        lists.erase(coord.it1);
+    }
+    return true;
 }
 
 Topology &Topology::get() {
     static Topology instance;
     return instance;
+}
+
+bool operator==(Topology::TopoIter it1, Topology::TopoIter it2) {
+    return it1.it1 == it2.it1 && it1.it2 == it2.it2;
+}
+
+bool operator!=(Topology::TopoIter it1, Topology::TopoIter it2) {
+    return !(it1 == it2);
 }
