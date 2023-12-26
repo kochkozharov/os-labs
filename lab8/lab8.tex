@@ -1,0 +1,541 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage{cmap}
+\usepackage[12pt]{extsizes}			
+\usepackage{mathtext} 				
+\usepackage[T2A]{fontenc}			
+\usepackage[utf8]{inputenc}			
+\usepackage[english,russian]{babel}
+\usepackage{setspace}
+\singlespacing
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}
+\usepackage{fancyhdr}
+\usepackage{soulutf8}
+\usepackage{euscript}
+\usepackage{mathrsfs}
+\usepackage{listings}
+
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=black]{hyperref}
+
+\pagestyle{fancy}
+\usepackage{indentfirst}
+\usepackage[top=10mm]{geometry}
+\rhead{}
+\lhead{}
+\renewcommand{\headrulewidth}{0mm}
+\usepackage{tocloft}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\usepackage[dvipsnames]{xcolor}
+
+\lstdefinestyle{mystyle}{ 
+    breaklines=true,
+    numbers=none,
+    basicstyle=\ttfamily\color{black},
+    keywordstyle=\color{black},
+    commentstyle=\color{black},
+    stringstyle=\color{black},
+    identifierstyle=\color{black}
+}
+
+
+\lstset{style=mystyle}
+
+\begin{document}
+\thispagestyle{empty}	
+\begin{center}
+	Московский авиационный институт
+	
+	(Национальный исследовательский университет)
+	
+	Факультет "Информационные технологии и прикладная математика"
+	
+	Кафедра "Вычислительная математика и программирование"
+	
+\end{center}
+\vspace{40ex}
+\begin{center}
+	\textbf{\large{Лабораторная работа №8 по курсу\linebreak \textquotedblleft Операционные системы\textquotedblright}}
+\end{center}
+\vspace{35ex}
+\begin{flushright}
+	\textit{Студент: } Кочкожаров Иван Вячеславович
+	
+	\vspace{2ex}
+	\textit{Группа: } М8О-208Б-22
+	
+	\vspace{2ex}
+	\textit{Преподаватель: } Миронов Евгений Сергеевич
+	
+	\vspace{2ex}
+	\textit{Оценка: } \underline{\quad\quad\quad\quad\quad\quad}
+	
+	 \vspace{2ex}
+	\textit{Дата: } \underline{\quad\quad\quad\quad\quad\quad}
+	
+	\vspace{2ex}
+	\textit{Подпись: } \underline{\quad\quad\quad\quad\quad\quad}
+	
+\end{flushright}
+
+\vspace{5ex}
+
+\begin{vfill}
+	\begin{center}
+		Москва, 2023
+	\end{center}	
+\end{vfill}
+\newpage
+
+
+\begingroup
+\color{black}
+\tableofcontents\newpage
+\endgroup
+
+\section{Репозиторий}
+\href{https://github.com/kochkozharov/os-labs}{https://github.com/kochkozharov/os-labs}
+
+\section{Цель работы}
+Приобретение практических навыков диагностики работы программного обеспечения.
+
+\section{Задание}
+Продемонстрировать ключевые 
+системные вызовы, используемые в лабораторной работе и то, что их использование соответствует варианту ЛР на примере лабораторной работы №3.
+
+\section{Описание strace}
+ Команда strace является инструментом диагностики в Linux. Она перехватывает и записывает любые системные вызовы, выполняемые командой.  
+Кроме того, также записывает любой сигнал Linux, отправляемый процессу. Затем мы можем использовать эту информацию для отладки или диагностики программы.
+
+В самом простом варианте strace запускает переданную команду с её аргументами и выводит в стандартный поток ошибок все системные вызовы команды.
+
+Возможные флаги:
+\begin{itemize}
+    \item -k - выводить стек вызовов для отслеживаемого процесса после каждого системного вызова
+    \item -o - выводить всю информацию о системных вызовах не в стандартный поток ошибок, а в файл
+    \item -c - подсчитывать количество ошибок, вызовов и время выполнения для каждого системного вызова
+    \item -T - выводить длительность выполнения системного вызова
+    \item -y - выводить пути для файловых дескрипторов
+    \item -yy - выводить информацию о протоколе для файловых дескрипторов
+    \item -p - указывает pid процесса, к которому следует подключиться
+    \item -f - отслеживать также дочерние процессы, если они будут созданы
+\end {itemize}
+
+
+\newpage
+\section{Демонстрация работы}
+\begin{lstlisting}
+execve("./lab3", ["lab3"], 0x7ffc1ebf2be8 /* 58 vars */) = 0 <0.001022>
+brk(NULL)                               = 0x55787aea9000 <0.000027>
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory) <0.000043>
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3 <0.000076>
+newfstatat(3, "", {st_mode=S_IFREG|0644, st_size=100195, ...}, AT_EMPTY_PATH) = 0 <0.000036>
+mmap(NULL, 100195, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f69e80dc000 <0.000041>
+close(3)                                = 0 <0.000021>
+openat(AT_FDCWD, "/usr/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3 <0.000032>
+read(3, "..."..., 832) = 832 <0.000027>
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784 <0.000022>
+newfstatat(3, "", {st_mode=S_IFREG|0755, st_size=1905600, ...}, AT_EMPTY_PATH) = 0 <0.000023>
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f69e80da000 <0.000040>
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784 <0.000025>
+mmap(NULL, 1936688, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f69e7f01000 <0.000032>
+mmap(0x7f69e7f23000, 1396736, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22000) = 0x7f69e7f23000 <0.000062>
+mmap(0x7f69e8078000, 344064, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x177000) = 0x7f69e8078000 <0.000044>
+mmap(0x7f69e80cc000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ca000) = 0x7f69e80cc000 <0.000047>
+mmap(0x7f69e80d2000, 32048, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f69e80d2000 <0.000033>
+close(3)                                = 0 <0.000021>
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f69e7eff000 <0.000030>
+arch_prctl(ARCH_SET_FS, 0x7f69e80db680) = 0 <0.000020>
+set_tid_address(0x7f69e80db950)         = 494752 <0.000023>
+set_robust_list(0x7f69e80db960, 24)     = 0 <0.000026>
+rseq(0x7f69e80dbfa0, 0x20, 0, 0x53053053) = 0 <0.000019>
+mprotect(0x7f69e80cc000, 16384, PROT_READ) = 0 <0.000033>
+mprotect(0x5578793aa000, 4096, PROT_READ) = 0 <0.000031>
+mprotect(0x7f69e8126000, 8192, PROT_READ) = 0 <0.000046>
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0 <0.000023>
+munmap(0x7f69e80dc000, 100195)          = 0 <0.000069>
+openat(AT_FDCWD, "/dev/shm/shared_memory_1", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0600) = 3 <0.000060>
+ftruncate(3, 1024)                      = 0 <0.000043>
+mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0) = 0x7f69e80f4000 <0.000036>
+openat(AT_FDCWD, "/dev/shm/shared_memory_2", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0600) = 4 <0.000036>
+ftruncate(4, 1024)                      = 0 <0.000020>
+mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, 4, 0) = 0x7f69e80f3000 <0.000031>
+openat(AT_FDCWD, "/dev/shm/sem.w_semaphore_1", O_RDWR|O_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000050>
+getrandom("\xc2\x82\xf3\xc3\xf4\xca\xc7\x40", 8, GRND_NONBLOCK) = 8 <0.000033>
+newfstatat(AT_FDCWD, "/dev/shm/sem.YCQqCP", 0x7fff80dcb940, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000034>
+openat(AT_FDCWD, "/dev/shm/sem.YCQqCP", O_RDWR|O_CREAT|O_EXCL, 0600) = 5 <0.000049>
+write(5, "\1\0\...\0", 32) = 32 <0.000035>
+mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 5, 0) = 0x7f69e80f2000 <0.000030>
+link("/dev/shm/sem.YCQqCP", "/dev/shm/sem.w_semaphore_1") = 0 <0.000035>
+newfstatat(5, "", {st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000021>
+getrandom("\xc8\xc0\x25\x58\xbf\xbb\x56\xd7", 8, GRND_NONBLOCK) = 8 <0.000019>
+brk(NULL)                               = 0x55787aea9000 <0.000019>
+brk(0x55787aeca000)                     = 0x55787aeca000 <0.000023>
+unlink("/dev/shm/sem.YCQqCP")           = 0 <0.000027>
+close(5)                                = 0 <0.000018>
+openat(AT_FDCWD, "/dev/shm/sem.rev_semaphore_1", O_RDWR|O_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000030>
+getrandom("\x09\x34\xd0\xd7\xfe\x72\xef\x85", 8, GRND_NONBLOCK) = 8 <0.000019>
+newfstatat(AT_FDCWD, "/dev/shm/sem.zUlo3n", 0x7fff80dcb940, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000025>
+openat(AT_FDCWD, "/dev/shm/sem.zUlo3n", O_RDWR|O_CREAT|O_EXCL, 0600) = 5 <0.000035>
+write(5, "\0\0\...\0", 32) = 32 <0.000030>
+mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 5, 0) = 0x7f69e80f1000 <0.000032>
+link("/dev/shm/sem.zUlo3n", "/dev/shm/sem.rev_semaphore_1") = 0 <0.000030>
+newfstatat(5, "", {st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000020>
+unlink("/dev/shm/sem.zUlo3n")           = 0 <0.000037>
+close(5)                                = 0 <0.000019>
+openat(AT_FDCWD, "/dev/shm/sem.w_semaphore_2", O_RDWR|O_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000035>
+getrandom("\xee\x01\x82\xa7\x3a\x5e\x6c\x62", 8, GRND_NONBLOCK) = 8 <0.000056>
+newfstatat(AT_FDCWD, "/dev/shm/sem.MMjCpl", 0x7fff80dcb940, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000043>
+openat(AT_FDCWD, "/dev/shm/sem.MMjCpl", O_RDWR|O_CREAT|O_EXCL, 0600) = 5 <0.000095>
+write(5, "\1\0\...\0", 32) = 32 <0.000049>
+mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 5, 0) = 0x7f69e80f0000 <0.000091>
+link("/dev/shm/sem.MMjCpl", "/dev/shm/sem.w_semaphore_2") = 0 <0.000058>
+newfstatat(5, "", {st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000027>
+unlink("/dev/shm/sem.MMjCpl")           = 0 <0.000029>
+close(5)                                = 0 <0.000018>
+openat(AT_FDCWD, "/dev/shm/sem.rev_semaphore_2", O_RDWR|O_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000035>
+getrandom("\x8c\x94\xaa\x16\x0d\x79\xbd\xfc", 8, GRND_NONBLOCK) = 8 <0.000019>
+getrandom("\x17\x6b\x19\x9c\xb0\x88\x95\xeb", 8, GRND_NONBLOCK) = 8 <0.000018>
+newfstatat(AT_FDCWD, "/dev/shm/sem.LnzjdY", 0x7fff80dcb940, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory) <0.000027>
+openat(AT_FDCWD, "/dev/shm/sem.LnzjdY", O_RDWR|O_CREAT|O_EXCL, 0600) = 5 <0.000043>
+write(5, "\0\0\0\0\0\0\0\0\200\0\...\0", 32) = 32 <0.000044>
+mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 5, 0) = 0x7f69e80ef000 <0.000029>
+link("/dev/shm/sem.LnzjdY", "/dev/shm/sem.rev_semaphore_2") = 0 <0.000029>
+newfstatat(5, "", {st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000020>
+unlink("/dev/shm/sem.LnzjdY")           = 0 <0.000023>
+close(5)                                = 0 <0.000018>
+newfstatat(0, "", {st_mode=S_IFREG|0644, st_size=145, ...}, AT_EMPTY_PATH) = 0 <0.000019>
+read(0, "short_strings.txt\nlong_string.tx"..., 4096) = 145 <0.000021>
+openat(AT_FDCWD, "short_strings.txt", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 5 <0.000155>
+openat(AT_FDCWD, "long_string.txt", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 6 <0.000072>
+clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLDstrace: Process 494753 attached
+, child_tidptr=0x7f69e80db950) = 494753 <0.000302>
+[pid 494753] set_robust_list(0x7f69e80db960, 24 <unfinished ...>
+[pid 494752] clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD <unfinished ...>
+[pid 494753] <... set_robust_list resumed>) = 0 <0.000033>
+[pid 494753] close(6)                   = 0 <0.000019>
+[pid 494753] dup2(3, 0)                 = 0 <0.000012>
+[pid 494752] <... clone resumed>, child_tidptr=0x7f69e80db950) = 494754 <0.000260>
+strace: Process 494754 attached
+[pid 494753] dup2(5, 1 <unfinished ...>
+[pid 494752] close(5 <unfinished ...>
+[pid 494754] set_robust_list(0x7f69e80db960, 24 <unfinished ...>
+[pid 494753] <... dup2 resumed>)        = 1 <0.000063>
+[pid 494752] <... close resumed>)       = 0 <0.000050>
+[pid 494754] <... set_robust_list resumed>) = 0 <0.000045>
+[pid 494752] close(6 <unfinished ...>
+[pid 494753] close(5 <unfinished ...>
+[pid 494752] <... close resumed>)       = 0 <0.000022>
+[pid 494753] <... close resumed>)       = 0 <0.000029>
+[pid 494754] close(5 <unfinished ...>
+[pid 494753] execve("child_lab3", ["child_lab3", "w_semaphore_1", "rev_semaphore_1"], 0x7fff80dcbf18 /* 58 vars */ <unfinished ...>
+[pid 494752] futex(0x7f69e80f0000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=470013742}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494754] <... close resumed>)       = 0 <0.000132>
+[pid 494754] dup2(4, 0)                 = 0 <0.000021>
+[pid 494754] dup2(6, 1)                 = 1 <0.000018>
+[pid 494754] close(6)                   = 0 <0.000021>
+[pid 494754] execve("child_lab3", ["child_lab3", "w_semaphore_2", "rev_semaphore_2"], 0x7fff80dcbf18 /* 58 vars */ <unfinished ...>
+[pid 494753] <... execve resumed>)      = 0 <0.000483>
+[pid 494753] brk(NULL)                  = 0x55d66f6bb000 <0.000026>
+[pid 494753] access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory) <0.000035>
+[pid 494753] openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC <unfinished ...>
+[pid 494754] <... execve resumed>)      = 0 <0.000454>
+[pid 494753] <... openat resumed>)      = 3 <0.000030>
+[pid 494753] newfstatat(3, "",  <unfinished ...>
+[pid 494754] brk(NULL <unfinished ...>
+[pid 494753] <... newfstatat resumed>{st_mode=S_IFREG|0644, st_size=100195, ...}, AT_EMPTY_PATH) = 0 <0.000137>
+[pid 494754] <... brk resumed>)         = 0x558139088000 <0.000032>
+[pid 494753] mmap(NULL, 100195, PROT_READ, MAP_PRIVATE, 3, 0 <unfinished ...>
+[pid 494754] access("/etc/ld.so.preload", R_OK <unfinished ...>
+[pid 494753] <... mmap resumed>)        = 0x7f03abb8d000 <0.000093>
+[pid 494754] <... access resumed>)      = -1 ENOENT (No such file or directory) <0.000034>
+[pid 494753] close(3 <unfinished ...>
+[pid 494754] openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC <unfinished ...>
+[pid 494753] <... close resumed>)       = 0 <0.000044>
+[pid 494754] <... openat resumed>)      = 3 <0.000034>
+[pid 494754] newfstatat(3, "",  <unfinished ...>
+[pid 494753] openat(AT_FDCWD, "/usr/lib64/libc.so.6", O_RDONLY|O_CLOEXEC <unfinished ...>
+[pid 494754] <... newfstatat resumed>{st_mode=S_IFREG|0644, st_size=100195, ...}, AT_EMPTY_PATH) = 0 <0.000033>
+[pid 494753] <... openat resumed>)      = 3 <0.000037>
+[pid 494754] mmap(NULL, 100195, PROT_READ, MAP_PRIVATE, 3, 0 <unfinished ...>
+[pid 494753] read(3,  <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b90d000 <0.000029>
+[pid 494754] close(3 <unfinished ...>
+[pid 494753] <... read resumed>"\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\"..., 832) = 832 <0.000061>
+[pid 494754] <... close resumed>)       = 0 <0.000034>
+[pid 494753] pread64(3,  <unfinished ...>
+[pid 494754] openat(AT_FDCWD, "/usr/lib64/libc.so.6", O_RDONLY|O_CLOEXEC <unfinished ...>
+[pid 494753] <... pread64 resumed>"\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\"..., 784, 64) = 784 <0.000055>
+[pid 494754] <... openat resumed>)      = 3 <0.000035>
+[pid 494753] newfstatat(3, "",  <unfinished ...>
+[pid 494754] read(3,  <unfinished ...>
+[pid 494753] <... newfstatat resumed>{st_mode=S_IFREG|0755, st_size=1905600, ...}, AT_EMPTY_PATH) = 0 <0.000035>
+[pid 494754] <... read resumed>"\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>"..., 832) = 832 <0.000043>
+[pid 494753] mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+[pid 494754] pread64(3,  <unfinished ...>
+[pid 494753] <... mmap resumed>) = 0x7f03abb8b000 <0.000039>
+[pid 494754] <... pread64 resumed>"\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784 <0.000036>
+[pid 494754] newfstatat(3, "",  <unfinished ...>
+[pid 494753] pread64(3,  <unfinished ...>
+[pid 494754] <... newfstatat resumed>{st_mode=S_IFREG|0755, st_size=1905600, ...}, AT_EMPTY_PATH) = 0 <0.000062>
+[pid 494753] <... pread64 resumed>"\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784 <0.000030>
+[pid 494754] mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+[pid 494753] mmap(NULL, 1936688, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0 <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b90b000 <0.000022>
+[pid 494754] pread64(3,  <unfinished ...>
+[pid 494753] <... mmap resumed>) = 0x7f03ab9b2000 <0.000073>
+[pid 494754] <... pread64 resumed>"\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784 <0.000030>
+[pid 494753] mmap(0x7f03ab9d4000, 1396736, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22000 <unfinished ...>
+[pid 494754] mmap(NULL, 1936688, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7ff48b732000 <0.000037>
+[pid 494753] <... mmap resumed>) = 0x7f03ab9d4000 <0.000078>
+[pid 494754] mmap(0x7ff48b754000, 1396736, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22000 <unfinished ...>
+[pid 494753] mmap(0x7f03abb29000, 344064, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x177000 <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b754000 <0.000059>
+[pid 494753] <... mmap resumed>) = 0x7f03abb29000 <0.000062>
+[pid 494754] mmap(0x7ff48b8a9000, 344064, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x177000 <unfinished ...>
+[pid 494753] mmap(0x7f03abb7d000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ca000 <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b8a9000 <0.000031>
+[pid 494754] mmap(0x7ff48b8fd000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ca000 <unfinished ...>
+[pid 494753] <... mmap resumed>) = 0x7f03abb7d000 <0.000066>
+[pid 494754] <... mmap resumed>) = 0x7ff48b8fd000 <0.000033>
+[pid 494753] mmap(0x7f03abb83000, 32048, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+[pid 494754] mmap(0x7ff48b903000, 32048, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+[pid 494753] <... mmap resumed>) = 0x7f03abb83000 <0.000030>
+[pid 494754] <... mmap resumed>) = 0x7ff48b903000 <0.000032>
+[pid 494754] close(3 <unfinished ...>
+[pid 494753] close(3 <unfinished ...>
+[pid 494754] <... close resumed>)       = 0 <0.000030>
+[pid 494753] <... close resumed>)       = 0 <0.000034>
+[pid 494754] mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+[pid 494753] mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b730000 <0.000033>
+[pid 494753] <... mmap resumed>) = 0x7f03ab9b0000 <0.000032>
+[pid 494754] arch_prctl(ARCH_SET_FS, 0x7ff48b90c680 <unfinished ...>
+[pid 494753] arch_prctl(ARCH_SET_FS, 0x7f03abb8c680 <unfinished ...>
+[pid 494754] <... arch_prctl resumed>)  = 0 <0.000030>
+[pid 494753] <... arch_prctl resumed>)  = 0 <0.000030>
+[pid 494754] set_tid_address(0x7ff48b90c950 <unfinished ...>
+[pid 494753] set_tid_address(0x7f03abb8c950 <unfinished ...>
+[pid 494754] <... set_tid_address resumed>) = 494754 <0.000032>
+[pid 494753] <... set_tid_address resumed>) = 494753 <0.000031>
+[pid 494754] set_robust_list(0x7ff48b90c960, 24 <unfinished ...>
+[pid 494753] set_robust_list(0x7f03abb8c960, 24 <unfinished ...>
+[pid 494754] <... set_robust_list resumed>) = 0 <0.000033>
+[pid 494753] <... set_robust_list resumed>) = 0 <0.000045>
+[pid 494754] rseq(0x7ff48b90cfa0, 0x20, 0, 0x53053053 <unfinished ...>
+[pid 494753] rseq(0x7f03abb8cfa0, 0x20, 0, 0x53053053 <unfinished ...>
+[pid 494754] <... rseq resumed>) = 0 <0.000031>
+[pid 494753] <... rseq resumed>) = 0 <0.000031>
+[pid 494754] mprotect(0x7ff48b8fd000, 16384, PROT_READ <unfinished ...>
+[pid 494753] mprotect(0x7f03abb7d000, 16384, PROT_READ <unfinished ...>
+[pid 494754] <... mprotect resumed>)    = 0 <0.000035>
+[pid 494753] <... mprotect resumed>)    = 0 <0.000047>
+[pid 494754] mprotect(0x55813846a000, 4096, PROT_READ <unfinished ...>
+[pid 494753] mprotect(0x55d66e551000, 4096, PROT_READ <unfinished ...>
+[pid 494754] <... mprotect resumed>)    = 0 <0.000040>
+[pid 494753] <... mprotect resumed>)    = 0 <0.000033>
+[pid 494754] mprotect(0x7ff48b957000, 8192, PROT_READ <unfinished ...>
+[pid 494753] mprotect(0x7f03abbd7000, 8192, PROT_READ <unfinished ...>
+[pid 494754] <... mprotect resumed>)    = 0 <0.000061>
+[pid 494753] <... mprotect resumed>)    = 0 <0.000057>
+[pid 494754] prlimit64(0, RLIMIT_STACK, NULL,  <unfinished ...>
+[pid 494753] prlimit64(0, RLIMIT_STACK, NULL,  <unfinished ...>
+[pid 494754] <... prlimit64 resumed>{rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0 <0.000025>
+[pid 494753] <... prlimit64 resumed>{rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0 <0.000048>
+[pid 494754] munmap(0x7ff48b90d000, 100195 <unfinished ...>
+[pid 494753] munmap(0x7f03abb8d000, 100195 <unfinished ...>
+[pid 494754] <... munmap resumed>)      = 0 <0.000057>
+[pid 494753] <... munmap resumed>)      = 0 <0.000062>
+[pid 494754] mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, 0, 0 <unfinished ...>
+[pid 494753] mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, 0, 0 <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b925000 <0.000055>
+[pid 494753] <... mmap resumed>) = 0x7f03abba5000 <0.000030>
+[pid 494754] openat(AT_FDCWD, "/dev/shm/sem.w_semaphore_2", O_RDWR|O_NOFOLLOW <unfinished ...>
+[pid 494753] openat(AT_FDCWD, "/dev/shm/sem.w_semaphore_1", O_RDWR|O_NOFOLLOW <unfinished ...>
+[pid 494754] <... openat resumed>)      = 3 <0.000054>
+[pid 494753] <... openat resumed>)      = 3 <0.000034>
+[pid 494754] newfstatat(3, "",  <unfinished ...>
+[pid 494753] newfstatat(3, "",  <unfinished ...>
+[pid 494754] <... newfstatat resumed>{st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000034>
+[pid 494753] <... newfstatat resumed>{st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000039>
+[pid 494754] getrandom( <unfinished ...>
+[pid 494753] getrandom( <unfinished ...>
+[pid 494754] <... getrandom resumed>"\xd7\x6c\x06\xc6\x8e\xf1\xa5\x4a", 8, GRND_NONBLOCK) = 8 <0.000024>
+[pid 494753] <... getrandom resumed>"\x6e\x58\x57\x86\xa7\x75\xe4\x3a", 8, GRND_NONBLOCK) = 8 <0.000036>
+[pid 494754] brk(NULL <unfinished ...>
+[pid 494753] brk(NULL <unfinished ...>
+[pid 494754] <... brk resumed>)  = 0x558139088000 <0.000026>
+[pid 494753] <... brk resumed>)  = 0x55d66f6bb000 <0.000028>
+[pid 494754] brk(0x5581390a9000 <unfinished ...>
+[pid 494753] brk(0x55d66f6dc000 <unfinished ...>
+[pid 494754] <... brk resumed>)  = 0x5581390a9000 <0.000027>
+[pid 494753] <... brk resumed>)  = 0x55d66f6dc000 <0.000028>
+[pid 494754] mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0 <unfinished ...>
+[pid 494753] mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0 <unfinished ...>
+[pid 494754] <... mmap resumed>) = 0x7ff48b924000 <0.000024>
+[pid 494753] <... mmap resumed>) = 0x7f03abba4000 <0.000026>
+[pid 494754] close(3 <unfinished ...>
+[pid 494753] close(3 <unfinished ...>
+[pid 494754] <... close resumed>)       = 0 <0.000026>
+[pid 494753] <... close resumed>)       = 0 <0.000038>
+[pid 494754] openat(AT_FDCWD, "/dev/shm/sem.rev_semaphore_2", O_RDWR|O_NOFOLLOW <unfinished ...>
+[pid 494753] openat(AT_FDCWD, "/dev/shm/sem.rev_semaphore_1", O_RDWR|O_NOFOLLOW <unfinished ...>
+[pid 494754] <... openat resumed>)      = 3 <0.000033>
+[pid 494753] <... openat resumed>)      = 3 <0.000030>
+[pid 494754] newfstatat(3, "",  <unfinished ...>
+[pid 494753] newfstatat(3, "",  <unfinished ...>
+[pid 494754] <... newfstatat resumed>{st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000032>
+[pid 494753] <... newfstatat resumed>{st_mode=S_IFREG|0600, st_size=32, ...}, AT_EMPTY_PATH) = 0 <0.000038>
+[pid 494754] mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0 <unfinished ...>
+[pid 494753] mmap(NULL, 32, PROT_READ|PROT_WRITE, MAP_SHARED, 3, 0) = 0x7f03abba3000 <0.000035>
+[pid 494753] close(3)    = 0 <0.000020>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=475385511}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494754] <... mmap resumed>)        = 0x7ff48b923000 <0.000498>
+[pid 494754] close(3)                   = 0 <0.000021>
+[pid 494754] newfstatat(1, "", {st_mode=S_IFREG|0644, st_size=0, ...}, AT_EMPTY_PATH) = 0 <0.000026>
+[pid 494754] futex(0x7ff48b924000, FUTEX_WAKE, 1) = 1 <0.000021>
+[pid 494752] <... futex resumed>)       = 0 <0.005928>
+[pid 494754] futex(0x7ff48b923000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476050170}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] futex(0x7f69e80ef000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494754] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494752] <... futex resumed>)       = 0 <0.000038>
+[pid 494754] futex(0x7ff48b923000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476147434}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1) = 1 <0.000027>
+[pid 494753] <... futex resumed>)       = 0 <0.000808>
+[pid 494752] futex(0x7f69e80f2000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476279223}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494753] newfstatat(1, "", {st_mode=S_IFREG|0644, st_size=0, ...}, AT_EMPTY_PATH) = 0 <0.000022>
+[pid 494753] futex(0x7f03abba4000, FUTEX_WAKE, 1) = 1 <0.000022>
+[pid 494752] <... futex resumed>)       = 0 <0.000183>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476505291}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494753] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494752] <... futex resumed>)       = 0 <0.000033>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476587397}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494753] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494752] <... futex resumed>)       = 0 <0.000031>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476674672}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494753] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494752] <... futex resumed>)       = 0 <0.000030>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476761175}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] futex(0x7f69e80ef000, FUTEX_WAKE, 1) = 1 <0.000039>
+[pid 494754] <... futex resumed>)       = 0 <0.000688>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494754] futex(0x7ff48b923000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476890691}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] <... futex resumed>)       = 1 <0.000040>
+[pid 494753] <... futex resumed>)       = 0 <0.000163>
+[pid 494752] futex(0x7f69e80f2000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=476965382}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494753] futex(0x7f03abba4000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494752] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494753] <... futex resumed>)       = 0 <0.000033>
+[pid 494752] futex(0x7f69e80f2000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477052808}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494753] futex(0x7f03abba4000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494752] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494753] <... futex resumed>)       = 0 <0.000031>
+[pid 494752] futex(0x7f69e80f2000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477143830}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494753] futex(0x7f03abba4000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494752] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000028>
+[pid 494753] <... futex resumed>)       = 0 <0.000030>
+[pid 494752] futex(0x7f69e80f2000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477229412}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494753] futex(0x7f03abba4000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494752] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000027>
+[pid 494753] <... futex resumed>)       = 0 <0.000032>
+[pid 494752] futex(0x7f69e80f2000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477318741}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494753] futex(0x7f03abba4000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494752] <... futex resumed>)       = -1 EAGAIN (Resource temporarily unavailable) <0.000038>
+[pid 494753] <... futex resumed>)       = 0 <0.000037>
+[pid 494752] futex(0x7f69e80ef000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477443447}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] <... futex resumed>)       = 1 <0.000033>
+[pid 494754] <... futex resumed>)       = 0 <0.000600>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494754] futex(0x7ff48b923000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477556150}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] <... futex resumed>)       = 1 <0.000039>
+[pid 494753] <... futex resumed>)       = 0 <0.000114>
+[pid 494752] read(0,  <unfinished ...>
+[pid 494753] futex(0x7f03abba3000, FUTEX_WAIT_BITSET|FUTEX_CLOCK_REALTIME, 0, {tv_sec=1703624281, tv_nsec=477634409}, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+[pid 494752] <... read resumed>"", 4096) = 0 <0.000041>
+[pid 494752] futex(0x7f69e80ef000, FUTEX_WAKE, 1) = 1 <0.000023>
+[pid 494752] futex(0x7f69e80f1000, FUTEX_WAKE, 1 <unfinished ...>
+[pid 494754] <... futex resumed>)       = 0 <0.000221>
+[pid 494752] <... futex resumed>)       = 1 <0.000028>
+[pid 494753] <... futex resumed>)       = 0 <0.000168>
+[pid 494752] wait4(-1,  <unfinished ...>
+[pid 494754] munmap(0x7ff48b925000, 1024 <unfinished ...>
+[pid 494753] munmap(0x7f03abba5000, 1024 <unfinished ...>
+[pid 494754] <... munmap resumed>)      = 0 <0.000044>
+[pid 494753] <... munmap resumed>)      = 0 <0.000045>
+[pid 494754] munmap(0x7ff48b924000, 32 <unfinished ...>
+[pid 494753] munmap(0x7f03abba4000, 32 <unfinished ...>
+[pid 494754] <... munmap resumed>)      = 0 <0.000028>
+[pid 494753] <... munmap resumed>)      = 0 <0.000029>
+[pid 494754] munmap(0x7ff48b923000, 32 <unfinished ...>
+[pid 494753] munmap(0x7f03abba3000, 32 <unfinished ...>
+[pid 494754] <... munmap resumed>)      = 0 <0.000027>
+[pid 494753] <... munmap resumed>)      = 0 <0.000029>
+[pid 494754] write(1, "flewllfelwlfewlfewlfewifjewif\nls"..., 83 <unfinished ...>
+[pid 494753] write(1, "ds\n\n\nsfd\ndggd\nd\nf\nrhtrg\n\nr\n\n", 28 <unfinished ...>
+[pid 494754] <... write resumed>)       = 83 <0.000101>
+[pid 494753] <... write resumed>)       = 28 <0.000102>
+[pid 494754] exit_group(0 <unfinished ...>
+[pid 494753] exit_group(0 <unfinished ...>
+[pid 494754] <... exit_group resumed>)  = ?
+[pid 494753] <... exit_group resumed>)  = ?
+[pid 494754] +++ exited with 0 +++
+[pid 494753] +++ exited with 0 +++
+<... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 494753 <0.000861>
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=494754, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 494754 <0.000030>
+unlink("/dev/shm/sem.w_semaphore_1")    = 0 <0.000045>
+munmap(0x7f69e80f2000, 32)              = 0 <0.000066>
+unlink("/dev/shm/sem.rev_semaphore_1")  = 0 <0.000033>
+munmap(0x7f69e80f1000, 32)              = 0 <0.000061>
+unlink("/dev/shm/sem.w_semaphore_2")    = 0 <0.000034>
+munmap(0x7f69e80f0000, 32)              = 0 <0.000050>
+unlink("/dev/shm/sem.rev_semaphore_2")  = 0 <0.000031>
+munmap(0x7f69e80ef000, 32)              = 0 <0.000051>
+unlink("/dev/shm/shared_memory_1")      = 0 <0.000032>
+munmap(0x7f69e80f4000, 1024)            = 0 <0.000037>
+unlink("/dev/shm/shared_memory_2")      = 0 <0.000032>
+munmap(0x7f69e80f3000, 1024)            = 0 <0.000039>
+exit_group(0)                           = ?
++++ exited with 0 +++
+\end{lstlisting}
+
+
+\begin{enumerate}
+    \item execve("./lab3", ["lab3"], 0x7ffc1ebf2be8 /* 58 vars */) = 0 <0.001022>: Этот вызов execve, который выполняет программу lab3. Значение 0 означает успешное выполнение.
+    \item brk(NULL)                               = 0x55787aea9000 <0.000027>: Этот вызов brk используется для расширения размера кучи программы. Здесь он устанавливает верхний предел кучи на адрес 0x55787aea9000.
+    \item access("/etc/ld.so.preload", R\_OK) = -1 ENOENT (No such file or directory) <0.000043> Этот вызов используется для того, чтобы узнать существует ли файл /etc/ld.so.preload. Он не обнаруживается.
+    \item openat(AT\_FDCWD, "/etc/ld.so.cache", O\_RDONLY|O\_CLOEXEC) = 3 <0.000076>: Этот вызов открывает файл /etc/ld.so.cache для чтения. Данный файл содержит кэш динамически загружаемых библиотек, которые используются для быстрого поиска библиотек при выполнении программ.
+    \item newfstatat(3, "", \{st\_mode=S\_IFREG|0644, st\_size=100195, ...\}, \\AT\_EMPTY\_PATH) = 0 <0.000036>:
+    Этот вызов получает информацию о файле, который связан с дескриптором 3.
+    \item mmap(NULL, 100195, PROT\_READ, MAP\_PRIVATE, 3, 0) = \\0x7f69e80dc000 <0.000041>: 
+    Выделение памяти с использованием системного вызова mmap. Этот вызов создает отображение файла /etc/ld.so.cache в виртуальную память для чтения (PROT\_READ) размером 100195 байт, начиная с адреса 0x7f34fc57e000. Отображение является частным и открыто только для чтения.
+    \item close(3) = 0: Этот вызов закрывает файловый дескриптор 3 (который был использован для ld.so.cache).
+    \item read(3, "..."..., 832) = 832 <0.000027>: Чтение 832 битов из файла 
+    \\/usr/lib64/libc.so.6.
+    \item arch\_prctl(ARCH\_SET\_FS, 0x7f69e80db680) = 0 <0.000020>: Задаёт состояние процесса.
+    \item mprotect(0x7f69e8126000, 8192, PROT\_READ) = 0 <0.000046>: Этот вызов изменяет права доступа к памяти. 
+    \item munmap(0x7f69e80dc000, 100195) = 0 <0.000069>: Снимает отражение файла или устройства в памяти.
+    \item prlimit64(0, RLIMIT\_STACK, NULL, \{rlim\_cur=8192*1024, 
+    \\rlim\_max=RLIM64\_INFINITY\}) = 0 <0.000023>: Этот вызов изменяет ограничения ресурсов процесса. Здесь он изменяет текущий размер стека в 8192*1024 байт и убирает ограничение на максимальный размер стека.
+    \item link("/dev/shm/sem.YCQqCP", "/dev/shm/sem.w\_semaphore\_1") = \\ = 0 <0.000035>: Создает новую ссылку (также известную как "жесткая" ссылка) на существующий файл. 
+    \item unlink("/dev/shm/sem.YCQqCP")           = 0 <0.000027> Удаляет имя из файловой системы.
+    \item ftruncate(3, 1024) = 0 <0.000043>: Этот вызов устанавливает размер файла, связанного с файловым дескриптором 3, в 1024 байта.
+    \item getpid() = 16879: Получение идентификатора текущего процесса.
+    \item write(5, "0..0", 32) = 32 <0.000044>
+    = 32: Запись 32 байт нулей в файл, связанный с файловым дескриптором 4.
+    \item clone(child\_stack=NULL, flags=CLONE\_CHILD\_CLEARTID|\\CLONE\_CHILD\_SETTID|SIGCHLD, \\child\_tidptr=0x7f69e80db950) = 494753 <0.000302>: Создание нового дочернего процесса процесса, являющегося копией родительского.
+    \item dup2(3, 0) = 0 <0.000012>: Делает декскриптор 0 копией дескриптора 3.
+    \item execve("child\_lab3", ["child\_lab3", "w\_semaphore\_1", "rev\_semaphore\_1"], \\0x7fff80dcbf18): Выполняет программу, child\_lab3 в дочернем процессе.
+    \item futex(0x7f69e80f2000, FUTEX\_WAIT\_BITSET|\\FUTEX\_CLOCK\_REALTIME, 0, \\\{tv\_sec=1703624281, tv\_nsec=476965382\}, \\FUTEX\_BITSET\_MATCH\_ANY): Взаимодействие с фьютексом (низкоуровневый легковесный примитив синхронизации), на основе которого реализован семафор.
+    \item wait4(-1, [\{WIFEXITED(s) \&\& WEXITSTATUS(s) == 0\}], 0, NULL) = 494754 <0.000030>:  Приостанавливает исполнение текущего процесса до того, как свою работу завершит любой дочерний процесс. 
+    \item exit\_group(0) = ?: Завершает работу всех потоков процесса.
+
+\end{enumerate}
+
+\newpage
+\section{Выводы}
+
+В результате выполнения данной лабораторной работы я ознакомился с таким средством диагностики как strace, с помощью которой можно отследить системные вызовы, выполняемые программой. Я приобрёл практические навыки диагностики работы программного обеспечения.
+\end{document}
