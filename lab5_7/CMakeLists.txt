@@ -1,5 +1,5 @@
-set(INC_DIR ${CMAKE_SOURCE_DIR}/lab5/include)
-set(SRC_DIR ${CMAKE_SOURCE_DIR}/lab5/src)
+set(INC_DIR ${CMAKE_SOURCE_DIR}/lab5_7/include)
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/lab5_7/src)
 
 add_library(zmqsocket STATIC ${SRC_DIR}/socket.cpp ${INC_DIR}/socket.h)
 add_library(zmqnode STATIC ${SRC_DIR}/node.cpp ${INC_DIR}/node.h )
