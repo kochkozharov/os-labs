@@ -47,7 +47,7 @@ int SemTimedWait(sem_t* sem) {
     if (clock_gettime(CLOCK_REALTIME, &absoluteTime) == -1) {
         return -1;
     }
-    absoluteTime.tv_sec += 1;
+    absoluteTime.tv_sec += 10;
     return sem_timedwait(sem, &absoluteTime);
 }
 
