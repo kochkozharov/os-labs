@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
         } else if (command == "ping") {
             int id;
             std::cin >> id;
-            if (topo.contains(id)) {
+            if (!topo.contains(id)) {
                 std::cerr << "Error: Not found\n";
                 std::cout << "> ";
                 std::cout.flush();
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
             std::string hay, needle;
             std::cin >> id >> hay >> needle;
-            if (topo.contains(id)) {
+            if (!topo.contains(id)) {
                 std::cerr << "Error: " + std::to_string(id) + " Not found\n";
                 std::cout << "> ";
                 std::cout.flush();
