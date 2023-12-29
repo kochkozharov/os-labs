@@ -1,0 +1,357 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage{cmap}
+\usepackage[12pt]{extsizes}			
+\usepackage{mathtext} 				
+\usepackage[T2A]{fontenc}			
+\usepackage[utf8]{inputenc}			
+\usepackage[english,russian]{babel}
+\usepackage{setspace}
+\singlespacing
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}
+\usepackage{fancyhdr}
+\usepackage{soulutf8}
+\usepackage{euscript}
+\usepackage{mathrsfs}
+\usepackage{listings}
+
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=black]{hyperref}
+
+\pagestyle{fancy}
+\usepackage{indentfirst}
+\usepackage[top=10mm]{geometry}
+\rhead{}
+\lhead{}
+\renewcommand{\headrulewidth}{0mm}
+\usepackage{tocloft}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\usepackage[dvipsnames]{xcolor}
+
+\lstdefinestyle{mystyle}{ 
+	keywordstyle=\color{OliveGreen},
+	numberstyle=\tiny\color{Gray},
+	stringstyle=\color{BurntOrange},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+    Московский авиационный институт
+
+    (Национальный исследовательский университет)
+
+    Факультет "Информационные технологии и прикладная математика"
+
+    Кафедра "Вычислительная математика и программирование"
+
+\end{center}
+\vspace{40ex}
+\begin{center}
+    \textbf{\large{Лабораторная работа №4 по курсу\linebreak \textquotedblleft Операционные системы\textquotedblright}}
+\end{center}
+\vspace{35ex}
+\begin{flushright}
+    \textit{Студент: } Кочкожаров Иван Вячеславович
+
+    \vspace{2ex}
+    \textit{Группа: } М8О-208Б-22
+
+    \vspace{2ex}
+    \textit{Преподаватель: } Миронов Евгений Сергеевич
+
+    \vspace{2ex}
+    \textit{Вариант: } 25
+
+    \vspace{2ex}
+    \textit{Оценка: } \underline{\quad\quad\quad\quad\quad\quad}
+
+    \vspace{2ex}
+    \textit{Дата: } \underline{\quad\quad\quad\quad\quad\quad}
+
+    \vspace{2ex}
+    \textit{Подпись: } \underline{\quad\quad\quad\quad\quad\quad}
+
+\end{flushright}
+
+\vspace{5ex}
+
+\begin{vfill}
+    \begin{center}
+        Москва, 2023
+    \end{center}
+\end{vfill}
+\newpage
+
+\begingroup
+\color{black}
+\tableofcontents\newpage
+\endgroup
+
+\section{Репозиторий}
+\href{https://github.com/kochkozharov/os-labs}{https://github.com/kochkozharov/os-labs}
+
+\section{Цель работы}
+Приобретение практических навыков в:
+\begin{itemize}
+    \item Создании динамических библиотек
+    \item Создании программ, которые используют функции динамических библиотек
+\end{itemize}
+
+\section{Задание}
+Требуется создать динамические библиотеки, которые реализуют определенный функционал. Далее использовать данные библиотеки 2-мя способами:
+\begin{enumerate}
+    \item Во время компиляции (на этапе «линковки»/linking)
+    \item Во время исполнения программы. Библиотеки загружаются в память с помощью интерфейса ОС для работы с динамическими библиотеками
+\end{enumerate}
+В конечном итоге, в лабораторной работе необходимо получить следующие части:
+\begin{itemize}
+    \item Динамические библиотеки, реализующие контракты, которые заданы вариантом;
+    \item Тестовая программа (программа №1), которая используют одну из библиотек, используя знания полученные на этапе компиляции;
+    \item Тестовая программа (программа №2), которая загружает библиотеки, используя только их местоположение и контракты.
+\end{itemize}
+
+\section{Описание работы программы}
+Функции, написанные в результате выполнения лабораторной работы:
+\begin{itemize}
+    \item Подсчёт наибольшего общего делителя для двух натуральных чисел
+    \item Перевод числа x из десятичной системы счисления в другую
+\end{itemize}
+
+В ходе выполнения лабораторной работы я использовала следующие системные вызовы:
+\begin{itemize}
+    \item dlopen - открытие динамического объекта
+    \item dlclose - закрытие динамического объекта
+    \item dlsym - получить адрес, по которому символ из библиотеки расположен в памяти
+\end{itemize}
+
+
+\newpage
+
+lib1.c
+\section{Исходный код}
+\begin{lstlisting}[language=C++]
+#include <stdlib.h>
+#include <string.h>
+
+#include "lib.h"
+#include "utils.h"
+
+char* Translation(long x) {
+    if (x < 0) {
+        return nullptr;
+    }
+    char* binary = (char*)malloc(NUM_BUFFER_SIZE);
+    if (!binary) {
+        return binary;
+    }
+    int i = 0;
+    do {
+        binary[i++] = '0' + (x & 1);
+        x >>= 1;
+    } while(x);
+    binary[i] = '\0';
+    ReverseString(binary, i);
+    return binary;
+}
+
+int GCD(int a, int b) {
+    if (a < 0 || b < 0) {
+        return -1;
+    }
+    while (b != 0) {
+        int tmp;
+        tmp = a % b;
+        a = b;
+        b = tmp;
+    }
+    return a;
+}
+\end{lstlisting}
+
+lib2.cpp
+\begin{lstlisting}[language=C++]
+#include <stdlib.h>
+#include <string.h>
+
+#include "lib.h"
+#include "utils.h"
+
+char* Translation(long x) {
+    if (x < 0) {
+        return nullptr;
+    }
+    char* trinary = (char*)malloc(NUM_BUFFER_SIZE);
+    if (!trinary) {
+        return trinary;
+    }
+    int i = 0;
+    do {
+        trinary[i++] = '0' + (x % 3);
+        x /= 3;
+    } while (x);
+    trinary[i] = '\0';
+    ReverseString(trinary, i);
+    return trinary;
+}
+
+int GCD(int a, int b) {
+    if (a < 0 || b < 0) {
+        return -1;
+    }
+    int min = a < b ? a : b;
+    int gcd = 0;
+    for (int i = 1; i < min + 1; i++) {
+        if ((a % i) == 0 && (b % i) == 0) {
+            gcd = i;
+        }
+    }
+    return gcd;
+}
+\end{lstlisting}
+
+utils.cpp
+\begin{lstlisting}[language=C++]
+#include "utils.h"
+#include <cstddef>
+
+void ReverseString(char* string, std::size_t length) {
+    for (std::size_t i = 0; i < length >> 1; ++i) {
+        char temp = string[i];
+        string[i] = string[length - i - 1];
+        string[length - i - 1] = temp;
+    }
+}
+\end{lstlisting}
+
+
+\newpage
+\section{Тесты}
+lab4\_lib1\_test.cpp
+\begin{lstlisting}[language=C++]
+#include <gtest/gtest.h>
+
+#include <cstring>
+
+#include "lib.h"
+
+TEST(FourthLabTests, GCDTest) {
+    EXPECT_EQ(GCD(49, 56), 7);
+    EXPECT_EQ(GCD(56, 49), 7);
+    EXPECT_EQ(GCD(57, 49), 1);
+}
+
+TEST(FourthLabTests, TranslationTest) {
+    auto deleter = [](char *str) { std::free(str); };
+    std::unique_ptr<char, decltype(deleter)> str(Translation(31), deleter);
+    EXPECT_TRUE(std::strcmp(str.get(), "11111") == 0);
+    str.reset(Translation(0));
+    EXPECT_TRUE(std::strcmp(str.get(), "0") == 0);
+    str.reset(Translation(888));
+    EXPECT_TRUE(std::strcmp(str.get(), "1101111000") == 0);
+    str.reset(Translation(-1));
+    EXPECT_EQ(str.get(), nullptr);
+}
+\end{lstlisting}
+lab4\_lib2\_test.cpp
+\begin{lstlisting}[language=C++]
+#include <gtest/gtest.h>
+
+#include <cstring>
+#include <utility>
+
+#include "lib.h"
+
+TEST(FourthLabTests, GCDTest) {
+    EXPECT_EQ(GCD(49, 56), 7);
+    EXPECT_EQ(GCD(56, 49), 7);
+    EXPECT_EQ(GCD(57, 49), 1);
+}
+
+TEST(FourthLabTests, TranslationTest) {
+    auto deleter = [](char *str) { std::free(str); };
+    std::unique_ptr<char, decltype(deleter)> str(Translation(0), deleter);
+    EXPECT_TRUE(std::strcmp(str.get(), "0") == 0);
+    str.reset(Translation(5));
+    EXPECT_TRUE(std::strcmp(str.get(), "12") == 0);
+    str.reset(Translation(888));
+    EXPECT_TRUE(std::strcmp(str.get(), "1012220") == 0);
+    str.reset(Translation(-1));
+    EXPECT_EQ(str.get(), nullptr);
+}
+\end{lstlisting}
+\newpage
+
+\section{Консоль}
+\begin{verbatim}
+ivan@asus-vivobook ~/c/o/b/lab4 (reports)> static_main
+> 1 8 81
+1
+> 2 300
+100101100
+> exit
+ivan@asus-vivobook ~/c/o/b/lab4 (reports)> cat run.sh
+export PATH_TO_LIB1="./liblib1.so"
+export PATH_TO_LIB2="./liblib2.so"
+./dynamic_main
+ivan@asus-vivobook ~/c/o/b/lab4 (reports)> run.sh
+> 1 81 9
+9
+> 2 443
+110111011
+> 0
+Switched
+> 1 81 9
+9
+> 2 443
+121102
+\end{verbatim}
+
+\section{Запуск тестов}
+\begin{verbatim}
+ivan@asus-vivobook ~/c/o/b/tests (reports)> lab4_lib1_test
+Running main() from /var/tmp/portage/dev-cpp/gtest-1.13.0/work/googletest-1.13.0/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FourthLabTests
+[ RUN      ] FourthLabTests.GCDTest
+[       OK ] FourthLabTests.GCDTest (0 ms)
+[ RUN      ] FourthLabTests.TranslationTest
+[       OK ] FourthLabTests.TranslationTest (0 ms)
+[----------] 2 tests from FourthLabTests (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 2 tests.
+ivan@asus-vivobook ~/c/o/b/tests (reports)> lab4_lib2_test
+Running main() from /var/tmp/portage/dev-cpp/gtest-1.13.0/work/googletest-1.13.0/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FourthLabTests
+[ RUN      ] FourthLabTests.GCDTest
+[       OK ] FourthLabTests.GCDTest (0 ms)
+[ RUN      ] FourthLabTests.TranslationTest
+[       OK ] FourthLabTests.TranslationTest (0 ms)
+[----------] 2 tests from FourthLabTests (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 2 tests.
+\end{verbatim}
+\newpage
+
+\section{Выводы}
+
+В результате выполнения данной лабораторной работы были созданы динамические библиотеки, которые реализуют функционал в соответствие с вариантом задания на С++. Приобретены практические навыки в создании программ, которые используют функции динамических библиотек.
+\end{document}
