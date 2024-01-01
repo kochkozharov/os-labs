@@ -31,3 +31,8 @@ add_executable(lab5_7_test lab5_7_test.cpp ../lab5_7/include/topology.h ../lab5_
 target_link_libraries(lab5_7_test GTest::gtest GTest::gtest_main zmq zmqsocket zmqnode nodetopo)
 target_include_directories(lab5_7_test PRIVATE ../lab5_7/include)
 add_test(lab5_7_test lab5_7_test)
+
+add_executable(cp_test cp_test.cpp ../cp/include/utils.h ../cp/src/utils.cpp ../cp/include/shared_memory.h ../cp/src/shared_memory.cpp)
+target_link_libraries(cp_test GTest::gtest GTest::gtest_main )
+target_include_directories(cp_test PRIVATE ../cp/include)
+add_test(cp_test cp_test)
