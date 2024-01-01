@@ -2,15 +2,14 @@
 #include <format>
 #include <iostream>
 #include <queue>
-#include <vector>
+#include <deque>
 
 #include "shared_memory.h"
 #include "thread"
 #include "utils.h"
 
-void GameLoop(SharedMemory &gameMemory, int maxSlots) {
-    srand(time(nullptr));
-    int mysteryNumber = rand() % 10000;
+static void GameLoop(SharedMemory &gameMemory, int maxSlots) {
+    int mysteryNumber = GenMysteryNumber();
     /*
     WeakSharedMemory gameMemory(
         "BC" + std::to_string(gameID),
@@ -49,7 +48,7 @@ int main() {
     auto *repPtr = static_cast<Response *>(rep.getData());
 
     std::priority_queue<Game> pq;
-    std::vector<SharedMemory> games;
+    std::deque<SharedMemory> games;
     std::vector<std::thread> threads;
     int gamesCount = 0;
 
@@ -62,9 +61,11 @@ int main() {
             gameID = gamesCount;
             maxSlots = reqPtr->maxSlots;
             gamesCount++;
+            std::cout << games.size() << '\n';
             games.emplace_back("/BC" + std::to_string(gameID),
                                sizeof(int) + maxSlots * sizeof(ConnectionSlot));
             threads.emplace_back(GameLoop, std::ref(games[gameID]), maxSlots);
+            std::cout << games.size() << '\n';
             std::cout << "Created new game " << gameID << '\n';
         } else {
             auto freeGame = pq.top();

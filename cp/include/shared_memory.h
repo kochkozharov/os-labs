@@ -48,7 +48,8 @@ class WeakSharedMemory {
 
     WeakSharedMemory(std::string_view name, std::size_t size);
     ~WeakSharedMemory();
-
+    WeakSharedMemory(const WeakSharedMemory &other) = delete;
+    WeakSharedMemory &operator=(const WeakSharedMemory &other) = delete;
     void writeLock();
     void writeUnlock();
     void readLock();

@@ -24,3 +24,4 @@ bool operator==(const GuessResult &a, const GuessResult &b);
 bool operator<(const Game &a, const Game &b);
 
 GuessResult MakeGuess(int secret, int guess);
+int GenMysteryNumber();

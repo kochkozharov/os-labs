@@ -2,7 +2,9 @@
 
 #include <sys/types.h>
 
+#include <algorithm>
 #include <array>
+#include <random>
 
 #include "shared_memory.h"
 #include "unistd.h"
@@ -39,3 +41,12 @@ bool operator<(const Game &a, const Game &b) {
     return a.freeSlots < b.freeSlots;
 }
 
+int GenMysteryNumber() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::string digits = "0123456789";
+    std::shuffle(digits.begin(), digits.end(), gen);
+    std::string result = digits.substr(0, 4);
+    int number = std::stoi(result);
+    return number;
+}

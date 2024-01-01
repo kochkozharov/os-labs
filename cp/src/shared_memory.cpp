@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <iostream>
 
 #include <cstdio>
 #include <cstdlib>
@@ -74,6 +75,7 @@ WeakSharedMemory::~WeakSharedMemory() {
 }
 
 SharedMemory::~SharedMemory() {
+    std::cerr << "Destroyed\n";
     if (shm_unlink(getName().c_str()) < 0) {
         std::perror("shm_unlink");
         std::abort();
