@@ -10,7 +10,7 @@
 
 void GameLoop(SharedMemory &gameMemory, int maxSlots) {
     srand(time(nullptr));
-    int mysteryNumber = rand() % 4000;
+    int mysteryNumber = rand() % 10000;
     /*
     WeakSharedMemory gameMemory(
         "BC" + std::to_string(gameID),
@@ -57,21 +57,16 @@ int main() {
     int gameID;
     int maxSlots;
     while (true) {
-        auto huy = reqPtr->newGame;
-        (void) huy;
-            std::cerr << "LOL\n";
         req.readLock();
-            std::cerr << "LOLaw\n";
         if (reqPtr->newGame) {
-            std::cerr << "LOLaa\n";
             pq.emplace(gamesCount, reqPtr->maxSlots, reqPtr->maxSlots);
-            std::cerr << "LOLaa\n";
             gameID = gamesCount;
             maxSlots = reqPtr->maxSlots;
             gamesCount++;
             games.emplace_back("/BC" + std::to_string(gameID),
                                sizeof(int) + maxSlots * sizeof(ConnectionSlot));
             threads.emplace_back(GameLoop, std::ref(games[gameID]), maxSlots);
+            std::cout << "Created new game " << gameID << '\n';
         } else {
             auto freeGame = pq.top();
             if (freeGame.freeSlots == 0) {
@@ -82,6 +77,7 @@ int main() {
                 freeGame.freeSlots--;
                 pq.push(freeGame);
                 maxSlots = freeGame.freeSlots;
+                std::cout << "Connected to game " << gameID << '\n';
             }
         }
         req.writeUnlock();
