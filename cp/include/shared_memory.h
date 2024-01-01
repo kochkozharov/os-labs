@@ -50,9 +50,9 @@ class WeakSharedMemory {
     ~WeakSharedMemory();
     WeakSharedMemory(const WeakSharedMemory &other) = delete;
     WeakSharedMemory &operator=(const WeakSharedMemory &other) = delete;
-    void writeLock();
+    bool writeLock(bool timed = false);
     void writeUnlock();
-    void readLock();
+    bool readLock(bool timed = false);
     void readUnlock();
     int getFD() const { return _FD; }
     void* getData() { return _ptr; };

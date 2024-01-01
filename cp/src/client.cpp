@@ -22,7 +22,9 @@ int main() {
             reqPtr->pid = getpid();
             reqPtr->maxSlots = maxSlots;
             req.readUnlock();
-            rep.readLock();
+            if (!rep.readLock(true)) {
+                exit(EXIT_SUCCESS);
+            }
             gameID = repPtr->gameID;
             rep.writeUnlock();
         } else if (command == "connect") {
@@ -30,16 +32,23 @@ int main() {
             reqPtr->newGame = false;
             reqPtr->pid = getpid();
             req.readUnlock();
-            rep.readLock();
+            if (!rep.readLock(true)) {
+                exit(EXIT_SUCCESS);
+            }
             gameID = repPtr->gameID;
             maxSlots = repPtr->maxSlots;
             rep.writeUnlock();
+        } else if (command == "stop") {
+            req.writeLock();
+            reqPtr->pid = -1;
+            req.readUnlock();
+            exit(EXIT_SUCCESS);
         } else {
             std::cerr << "Unknown command\n";
             continue;
         }
-        std::cout << "Connected to game " << gameID << '\n';
         if (gameID != -1) {
+            std::cout << "Connected to game " << gameID << '\n';
             break;
         }
         std::cerr << "No free games available. Try creating new\n";
@@ -55,7 +64,7 @@ int main() {
     while (true) {
         int guess;
         std::cin >> guess;
-        if (guess >= 10000 || guess < 0) {
+        if (guess > 9999 || guess < -1) {
             std::cerr << "Incorrect format\n";
             continue;
         }

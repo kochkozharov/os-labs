@@ -1,12 +1,13 @@
 #include <csignal>
+#include <deque>
 #include <format>
 #include <iostream>
 #include <queue>
-#include <deque>
 
 #include "shared_memory.h"
 #include "thread"
 #include "utils.h"
+
 
 static void GameLoop(SharedMemory &gameMemory, int maxSlots) {
     int mysteryNumber = GenMysteryNumber();
@@ -20,6 +21,9 @@ static void GameLoop(SharedMemory &gameMemory, int maxSlots) {
     while (true) {
         gameMemory.readLock();
         auto which = *statusPtr;
+        if (gamePtr[which].guess == -1) {
+            break;
+        }
         auto res = MakeGuess(mysteryNumber, gamePtr[which].guess);
         auto outputStr = std::format(
             "Player {}:\n\tGuess {}\tBulls {}\tCows {}\n", gamePtr[which].pid,
@@ -35,9 +39,11 @@ static void GameLoop(SharedMemory &gameMemory, int maxSlots) {
         }
         gameMemory.writeUnlock();
     }
-    for (int i = 0; i < maxSlots; ++i) {
+    int i = 0;
+    while (gamePtr[i].pid != 0){
         auto pid = gamePtr[i].pid;
         kill(pid, SIGTERM);
+        ++i;
     }
 }
 
@@ -56,16 +62,17 @@ int main() {
     int maxSlots;
     while (true) {
         req.readLock();
+        if (reqPtr->pid == -1) {
+            break;
+        }
         if (reqPtr->newGame) {
             pq.emplace(gamesCount, reqPtr->maxSlots, reqPtr->maxSlots);
             gameID = gamesCount;
             maxSlots = reqPtr->maxSlots;
             gamesCount++;
-            std::cout << games.size() << '\n';
             games.emplace_back("/BC" + std::to_string(gameID),
                                sizeof(int) + maxSlots * sizeof(ConnectionSlot));
             threads.emplace_back(GameLoop, std::ref(games[gameID]), maxSlots);
-            std::cout << games.size() << '\n';
             std::cout << "Created new game " << gameID << '\n';
         } else {
             auto freeGame = pq.top();
@@ -85,5 +92,8 @@ int main() {
         repPtr->maxSlots = maxSlots;
         repPtr->gameID = gameID;
         rep.readUnlock();
+    }
+    for (auto &t : threads) {
+        t.join();
     }
 }

@@ -3,14 +3,13 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <iostream>
 
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 
 WeakSharedMemory::WeakSharedMemory(std::string_view name, std::size_t size)
     : _name(name), _size(size) {
-
     _wSemPtr = sem_open((_name + "W").c_str(), O_CREAT, S_IRUSR | S_IWUSR, 1);
     _rSemPtr = sem_open((_name + "R").c_str(), O_CREAT, S_IRUSR | S_IWUSR, 0);
     _FD = shm_open(_name.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
@@ -51,11 +50,34 @@ WeakSharedMemory::WeakSharedMemory(std::string_view name, std::size_t size)
     }
 }
 
-void WeakSharedMemory::writeLock() { sem_wait(_wSemPtr); }
+static bool SemTimedWait(sem_t* sem) {
+    struct timespec absoluteTime;
+    if (clock_gettime(CLOCK_REALTIME, &absoluteTime) == -1) {
+        return false;
+    }
+    absoluteTime.tv_sec += 5;
+    return sem_timedwait(sem, &absoluteTime) == 0;
+}
+
+bool WeakSharedMemory::writeLock(bool timed) {
+    if (timed) {
+        return SemTimedWait(_wSemPtr);
+    } else {
+        sem_wait(_wSemPtr);
+        return true;
+    }
+}
 
 void WeakSharedMemory::writeUnlock() { sem_post(_wSemPtr); }
 
-void WeakSharedMemory::readLock() { sem_wait(_rSemPtr); }
+bool WeakSharedMemory::readLock(bool timed) {
+    if (timed) {
+        return SemTimedWait(_rSemPtr);
+    } else {
+        sem_wait(_rSemPtr);
+        return true;
+    }
+}
 
 void WeakSharedMemory::readUnlock() { sem_post(_rSemPtr); }
 
@@ -75,7 +97,6 @@ WeakSharedMemory::~WeakSharedMemory() {
 }
 
 SharedMemory::~SharedMemory() {
-    std::cerr << "Destroyed\n";
     if (shm_unlink(getName().c_str()) < 0) {
         std::perror("shm_unlink");
         std::abort();
