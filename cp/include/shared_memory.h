@@ -7,7 +7,7 @@
 #include <string_view>
 
 constexpr std::string_view REQUEST_SLOT_NAME = "/BCRequest";
-constexpr std::string_view RESPONSE_SLOT_NAME = "/BCResponce";
+constexpr std::string_view RESPONSE_SLOT_NAME = "/BCResponse";
 
 
 struct Request {

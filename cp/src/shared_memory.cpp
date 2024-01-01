@@ -78,7 +78,7 @@ SharedMemory::~SharedMemory() {
         std::perror("shm_unlink");
         std::abort();
     }
-    if (sem_unlink(( getName() + "W").c_str()) < 0) {
+    if (sem_unlink((getName() + "W").c_str()) < 0) {
         std::perror("sem_unlink");
         std::abort();
     }

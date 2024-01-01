@@ -19,11 +19,11 @@ int main() {
         if (command == "create") {
             std::cin >> maxSlots;
             req.writeLock();
-            reqPtr->newGame = true;
+            reqPtr->newGame =true;
             reqPtr->pid = getpid();
             reqPtr->maxSlots = maxSlots;
-            rep.readLock();
             req.readUnlock();
+            rep.readLock();
             gameID = repPtr->gameID;
             rep.writeUnlock();
         } else if (command == "connect") {
@@ -38,13 +38,13 @@ int main() {
         } else {
             std::cerr << "Unknown command\n";
         }
+        std::cerr << "here!\n";
         std::cerr << "> ";
         if (gameID != -1) {
             break;
         }
         std::cerr << "No free games available. Try creating new\n";
     }
-    std::cerr << "here!\n";
 
     WeakSharedMemory gameMemory(
         "BC" + std::to_string(gameID),

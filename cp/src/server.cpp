@@ -24,7 +24,7 @@ void GameLoop(SharedMemory &gameMemory, int maxSlots) {
         auto which = *statusPtr;
         auto res = MakeGuess(mysteryNumber, gamePtr[which].guess);
         auto outputStr = std::format(
-            "Player {}:\n \tGuess {} \tBulls {} \t Cows {}", gamePtr[which].pid,
+            "Player {}:\n \tGuess {} \tBulls {} \t Cows {}\n", gamePtr[which].pid,
             gamePtr[which].guess, res.bulls, res.cows);
         for (int i = 0; i < maxSlots; ++i) {
             auto pid = gamePtr[i].pid;
@@ -48,6 +48,7 @@ int main() {
     SharedMemory rep(RESPONSE_SLOT_NAME, sizeof(Response));
     auto *reqPtr = static_cast<Request *>(req.getData());
     auto *repPtr = static_cast<Response *>(rep.getData());
+
     std::priority_queue<Game> pq;
     std::vector<SharedMemory> games;
     std::vector<std::thread> threads;
@@ -56,15 +57,19 @@ int main() {
     int gameID;
     int maxSlots;
     while (true) {
+        auto huy = reqPtr->newGame;
+        (void) huy;
+            std::cerr << "LOL\n";
         req.readLock();
-
+            std::cerr << "LOLaw\n";
         if (reqPtr->newGame) {
+            std::cerr << "LOLaa\n";
             pq.emplace(gamesCount, reqPtr->maxSlots, reqPtr->maxSlots);
+            std::cerr << "LOLaa\n";
             gameID = gamesCount;
             maxSlots = reqPtr->maxSlots;
             gamesCount++;
-            std::cerr << "LOL\n";
-            games.emplace_back("BC" + std::to_string(gameID),
+            games.emplace_back("/BC" + std::to_string(gameID),
                                sizeof(int) + maxSlots * sizeof(ConnectionSlot));
             threads.emplace_back(GameLoop, std::ref(games[gameID]), maxSlots);
         } else {
@@ -79,8 +84,8 @@ int main() {
                 maxSlots = freeGame.freeSlots;
             }
         }
-        rep.writeLock();
         req.writeUnlock();
+        rep.writeLock();
         repPtr->maxSlots = maxSlots;
         repPtr->gameID = gameID;
         rep.readUnlock();
