@@ -18,7 +18,7 @@ int main() {
         if (command == "create") {
             std::cin >> maxSlots;
             req.writeLock();
-            reqPtr->newGame =true;
+            reqPtr->newGame = true;
             reqPtr->pid = getpid();
             reqPtr->maxSlots = maxSlots;
             req.readUnlock();
@@ -36,6 +36,7 @@ int main() {
             rep.writeUnlock();
         } else {
             std::cerr << "Unknown command\n";
+            continue;
         }
         std::cout << "Connected to game " << gameID << '\n';
         if (gameID != -1) {
@@ -49,6 +50,8 @@ int main() {
         sizeof(int) + maxSlots * sizeof(ConnectionSlot));
     auto *statusPtr = static_cast<int *>(gameMemory.getData());
     auto *gamePtr = reinterpret_cast<ConnectionSlot *>(statusPtr + 1);
+    int conID = 0;
+    bool connected = false;
     while (true) {
         int guess;
         std::cin >> guess;
@@ -57,9 +60,13 @@ int main() {
             continue;
         }
         gameMemory.writeLock();
-        *statusPtr = gameID;
-        gamePtr[gameID].pid = getpid();
-        gamePtr[gameID].guess = guess;
+        while (!connected && gamePtr[conID].pid != 0) {
+            ++conID;
+        }
+        connected = true;
+        *statusPtr = conID;
+        gamePtr[conID].pid = getpid();
+        gamePtr[conID].guess = guess;
         gameMemory.readUnlock();
     }
 }

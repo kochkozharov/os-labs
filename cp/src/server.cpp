@@ -1,8 +1,8 @@
+#include <csignal>
 #include <format>
+#include <iostream>
 #include <queue>
 #include <vector>
-#include <csignal>
-#include <iostream>
 
 #include "shared_memory.h"
 #include "thread"
@@ -18,22 +18,21 @@ void GameLoop(SharedMemory &gameMemory, int maxSlots) {
     */
     auto *statusPtr = static_cast<int *>(gameMemory.getData());
     auto *gamePtr = reinterpret_cast<ConnectionSlot *>(statusPtr + 1);
-    bool guessed = false;
-    while (!guessed) {
+    while (true) {
         gameMemory.readLock();
         auto which = *statusPtr;
         auto res = MakeGuess(mysteryNumber, gamePtr[which].guess);
         auto outputStr = std::format(
-            "Player {}:\n \tGuess {} \tBulls {} \t Cows {}\n", gamePtr[which].pid,
+            "Player {}:\n\tGuess {}\tBulls {}\tCows {}\n", gamePtr[which].pid,
             gamePtr[which].guess, res.bulls, res.cows);
         for (int i = 0; i < maxSlots; ++i) {
             auto pid = gamePtr[i].pid;
-            auto fd =
-                open((std::format("/proc/{}/fd/0", pid)).c_str(), O_WRONLY);
-            write(fd, outputStr.c_str(), outputStr.size() + 1);
-        }
-        if (res == GuessResult(4, 0)) {
-            guessed = true;
+            std::cerr << pid << '\n';
+            if (pid != -1) {
+                auto fd =
+                    open((std::format("/proc/{}/fd/0", pid)).c_str(), O_WRONLY);
+                write(fd, outputStr.c_str(), outputStr.size() + 1);
+            }
         }
         gameMemory.writeUnlock();
     }
