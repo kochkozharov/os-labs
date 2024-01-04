@@ -37,6 +37,7 @@ static void GameLoop(SharedMemory &gameMemory, int maxSlots) {
                 write(fd, outputStr.c_str(), outputStr.size() + 1);
             }
         }
+        std::cerr << '\n';
         gameMemory.writeUnlock();
     }
     int i = 0;
