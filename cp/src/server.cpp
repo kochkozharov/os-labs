@@ -11,11 +11,6 @@
 
 static void GameLoop(SharedMemory &gameMemory, int maxSlots) {
     int mysteryNumber = GenMysteryNumber();
-    /*
-    WeakSharedMemory gameMemory(
-        "BC" + std::to_string(gameID),
-        sizeof(int) + maxSlots * sizeof(ConnectionSlot));
-    */
     auto *statusPtr = static_cast<int *>(gameMemory.getData());
     auto *gamePtr = reinterpret_cast<ConnectionSlot *>(statusPtr + 1);
     while (true) {

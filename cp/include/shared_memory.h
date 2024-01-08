@@ -10,7 +10,6 @@
 constexpr std::string_view REQUEST_SLOT_NAME = "/BCRequest";
 constexpr std::string_view RESPONSE_SLOT_NAME = "/BCResponse";
 
-
 struct Request {
     bool newGame;
     pid_t pid;
@@ -49,8 +48,10 @@ class WeakSharedMemory {
 
     WeakSharedMemory(std::string_view name, std::size_t size);
     ~WeakSharedMemory();
-    WeakSharedMemory(const WeakSharedMemory &other) = delete;
-    WeakSharedMemory &operator=(const WeakSharedMemory &other) = delete;
+    WeakSharedMemory(const WeakSharedMemory& other) = delete;
+    WeakSharedMemory(WeakSharedMemory&& other) = default;
+    WeakSharedMemory& operator=(const WeakSharedMemory& other) = delete;
+    WeakSharedMemory& operator=(WeakSharedMemory&& other) = default;
     bool writeLock(bool timed = false);
     void writeUnlock();
     bool readLock(bool timed = false);
