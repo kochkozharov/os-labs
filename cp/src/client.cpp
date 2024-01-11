@@ -22,6 +22,7 @@ int main() {
             reqPtr->pid = getpid();
             reqPtr->maxSlots = maxSlots;
             req.readUnlock();
+            
             if (!rep.readLock(true)) {
                 exit(EXIT_SUCCESS);
             }
@@ -32,6 +33,7 @@ int main() {
             reqPtr->newGame = false;
             reqPtr->pid = getpid();
             req.readUnlock();
+
             if (!rep.readLock(true)) {
                 exit(EXIT_SUCCESS);
             }

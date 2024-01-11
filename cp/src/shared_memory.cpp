@@ -1,9 +1,9 @@
 #include "shared_memory.h"
 
-#include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
