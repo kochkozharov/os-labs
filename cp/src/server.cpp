@@ -62,7 +62,7 @@ int main() {
             break;
         }
         if (reqPtr->newGame) {
-            pq.emplace(gamesCount, reqPtr->maxSlots, reqPtr->maxSlots);
+            pq.emplace(gamesCount, reqPtr->maxSlots, reqPtr->maxSlots-1);
             gameID = gamesCount;
             maxSlots = reqPtr->maxSlots;
             gamesCount++;
