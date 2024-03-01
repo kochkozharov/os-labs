@@ -93,8 +93,6 @@ int main(int argc, char *argv[]) {
         it.it2 = it.it1->begin();
         for (;it.it2 != it.it1->end(); it.it2++) {
             kill(it.it2->pid, SIGKILL);
-            it.it2++;
         }
-        it.it1++;
     }
 }

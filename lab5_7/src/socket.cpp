@@ -47,3 +47,7 @@ std::optional<std::string> Socket::receiveMessage(bool nowait) {
     }
     return {};
 }
+
+void Socket::setTimeout() {
+    
+}
