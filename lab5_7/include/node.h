@@ -9,6 +9,7 @@ class ControlNode {
    private:
     Socket sock;
     ControlNode();
+    int prevConId = -1;
 
    public:
     ControlNode(const ControlNode &other) = delete;

@@ -1,8 +1,11 @@
 #include "node.h"
 
+#include "iostream"
 #include "stdexcept"
 
-ControlNode::ControlNode() : sock(zmq::socket_type::req) {}
+ControlNode::ControlNode() : sock(zmq::socket_type::pair) {
+    sock.setTimeout();
+}
 
 ControlNode &ControlNode::get() {
     static ControlNode instance;
@@ -11,14 +14,19 @@ ControlNode &ControlNode::get() {
 
 bool ControlNode::send(int id, const std::string &msg) {
     auto status = sock.connect(id) && sock.sendMessage(msg);
+    prevConId = id;
     return status;
 }
 
 std::optional<std::string> ControlNode::receive() {
-    return sock.receiveMessage(false);
+    auto temp = sock.receiveMessage(false);
+    sock.disconnect(prevConId);
+    return temp;
+
 }
 
-ComputationNode::ComputationNode(int id) : sock(zmq::socket_type::rep), id(id) {
+ComputationNode::ComputationNode(int id)
+    : sock(zmq::socket_type::pair), id(id) {
     sock.bind(id);
 }
 
@@ -45,7 +53,8 @@ void ComputationNode::computationLoop() {
         if (command == "exec") {
             std::string hay, needle;
             ss >> hay >> needle;
-            sock.sendMessage("Ok: " + std::to_string(id) + ' ' + findAllOccurencies(hay, needle));
+            sock.sendMessage("Ok: " + std::to_string(id) + ' ' +
+                             findAllOccurencies(hay, needle));
         } else if (command == "ping") {
             sock.sendMessage("pong");
         }
